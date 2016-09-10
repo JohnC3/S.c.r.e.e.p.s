@@ -11,6 +11,10 @@ var roleDistributer = {
             return ([STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_TOWER].indexOf(s.structureType) != -1 && (s).energyCapacity > (s).energy)}});
             
         var Storage = Game.getObjectById(creep.memory.assigned_storage);
+        
+        if(Storage.store[RESOURCE_ENERGY] == 0){
+            Storage = creep.pos.findClosestByRange(FIND_STRUCTURES,{filter:s => s.structureType == STRUCTURE_LINK});
+        }
 
         if(creep.carry.energy == 0){
             creep.memory.gathering = true;

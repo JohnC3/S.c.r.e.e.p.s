@@ -89,8 +89,6 @@ var roleMiner = {
             	        if (link.length > 0) {
             	            
         	                var j = miners[i].transfer(link[0], RESOURCE_ENERGY);
-        	                console.log(j)
-        	                console.log(link)
         	            }         else {
         	            miners[i].drop(RESOURCE_ENERGY);
         	        }

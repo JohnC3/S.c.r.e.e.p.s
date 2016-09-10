@@ -63,17 +63,18 @@ var roleTruck = {
         else{
             // If not in the correct room for a dropoff return to said room.
             if(creep.memory.droplocation != creep.room.name){
-                creep.moveTo(creep.pos.findClosestByPath(creep.room.findExitTo(creep.memory.droplocation)));
+                creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.droplocation)));
             }
             else{
                 
                 var drop_points = creep.room.find(FIND_STRUCTURES, { filter: (s) => {
                     return ([STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_TOWER].indexOf(s.structureType) != -1 && (s).energyCapacity > (s).energy)}});
 
-                var ST = creep.room.find(FIND_STRUCTURES, { filter: (s) => (s).structureType == STRUCTURE_STORAGE});
+                var ST = creep.room.find(FIND_STRUCTURES, { filter: (s) => ((s).structureType == STRUCTURE_STORAGE || (s).structureType == STRUCTURE_LINK) && (s.energy < s.energyCapacity)});
                 if (ST.length > 0){
-                    if (creep.transfer(ST[0],RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                        creep.moveTo(ST[0]);
+                    var closest_dropoff = creep.pos.findClosestByRange(ST)
+                    if (creep.transfer(closest_dropoff,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+                        creep.moveTo(closest_dropoff);
                     }
                     
                 }
@@ -90,18 +91,9 @@ var roleTruck = {
                     // If the harvester is now empty it should pickup more energy
                     else if(creep.carry.energy == 0){
                         creep.memory.gathering = true;
-                
                     }
+                }
 
-            
-                }
-                
-                else if(ST.length > 0){
-                    if(creep.transfer(ST[0],RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                        creep.moveTo(ST[0]);
-                        
-                    }
-                }
                 // If you have nothing to do AT all! Export to the homeland
                 else{
                     creep.moveTo(Game.flags[creep.room.name+'Idle'])

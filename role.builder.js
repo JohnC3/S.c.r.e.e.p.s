@@ -92,8 +92,7 @@ var roleBuilder = {
    	        var storedResource = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (resource) => 
                     (resource.structureType == STRUCTURE_CONTAINER && resource.store[RESOURCE_ENERGY] > 500) ||
-                    (resource.structureType == STRUCTURE_LINK && resource.energy > 500) ||
-                    (resource.structureType == STRUCTURE_STORAGE && resource.store[RESOURCE_ENERGY] > 1000)
+                    (resource.structureType == STRUCTURE_STORAGE && resource.store[RESOURCE_ENERGY] > 5000)
                 });	        
 
 	        if (storedResource){
