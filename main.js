@@ -57,6 +57,11 @@ module.exports.loop = function () {
     
 
     for(s in Game.spawns){
+        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2);
+        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,3);
+        spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);
+        
+        
         
         spawnControl.run(s);
         
@@ -84,9 +89,7 @@ module.exports.loop = function () {
         
         // Move the troops to intercept things inc base rooms!
 
-        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2);
-        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,3);
-        spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);
+
     
 
 
