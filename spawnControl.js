@@ -10,6 +10,8 @@ var spawnControl = {
         var room_development = cur_room.energyCapacityAvailable;
         
         var num_sources = currentSpawn.room.find(FIND_SOURCES).length;
+        
+        var num_links = currentSpawn.room.find(FIND_STRUCTURES, {filter : s => s.structureType == STRUCTURE_LINK} ).length;
         // The worker body changes based on energy capacity availalbe
 
         var level_bod =   {1:[WORK,WORK,CARRY,MOVE],
@@ -43,7 +45,7 @@ var spawnControl = {
                         9:[MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY]
         };
         
-        
+        // Intended to create larger creeps.
         
         var workerBody = level_bod[cur_controler.level];
 
@@ -132,7 +134,7 @@ var spawnControl = {
                 var name = currentSpawn.createCreep([HEAL,HEAL,MOVE,MOVE],"Healer"+Memory.N,{'role':'healer','rally_flag':'knights'});
             } 
             else if (Deconstructors.length < 1){
-            //var name = Game.spawns.Spawn1.createCreep([WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],"DemoManr"+Memory.N,{'role':'deconstructor'});
+            //var name = currentSpawn.createCreep([WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],"DemoManr"+Memory.N,{'role':'deconstructor'});
                 }
             
         }
@@ -142,7 +144,7 @@ var spawnControl = {
         if (Builders.length == 0){
             var name = currentSpawn.createCreep(workerBody,"builder"+Memory.N,{'role':'builder'});
         }
-        else if (Upgraders.length <  num_sources){
+        else if (Upgraders.length <  2*num_sources){
             var name = currentSpawn.createCreep(upgraderBody,"upgrader"+Memory.N,{'role':'upgrader'});
         } 
         
@@ -152,15 +154,18 @@ var spawnControl = {
             }
         }
         
-        
-        if (_.filter(Game.creeps, (c)=>c.memory.role == 'truck' && c.memory.station == cur_room.name).length < num_sources){ //Math.floor(2 * num_sources)){
-            var name = currentSpawn.createCreep(transportBody,"Truck"+Memory.N,{'role':'truck','collect_dropped':true,'station':cur_room.name,'droplocation':cur_room.name});
-        } else if (_.filter(Game.creeps, (c)=>c.memory.role == 'truck' && c.memory.station == cur_room.name).length < num_sources+1){ //Math.floor(2 * num_sources)+1){
-            var name = currentSpawn.createCreep(transportBody,"Truck"+Memory.N,{'role':'truck','collect_dropped':false,'station':cur_room.name,'droplocation':cur_room.name});
-        } 
-
+        // Only build trucks if there are no links! 
+        if(num_links < num_sources + 1){
+            if (_.filter(Game.creeps, (c)=>c.memory.role == 'truck' && c.memory.station == cur_room.name).length < num_sources){ //Math.floor(2 * num_sources)){
+                var name = currentSpawn.createCreep(transportBody,"Truck"+Memory.N,{'role':'truck','collect_dropped':true,'station':cur_room.name,'droplocation':cur_room.name});
+            } else if (_.filter(Game.creeps, (c)=>c.memory.role == 'truck' && c.memory.station == cur_room.name).length < num_sources+1){ //Math.floor(2 * num_sources)+1){
+                var name = currentSpawn.createCreep(transportBody,"Truck"+Memory.N,{'role':'truck','collect_dropped':false,'station':cur_room.name,'droplocation':cur_room.name});
+            }
+            
+        }
+        // Create a miner for every source in a room.
         if (_.filter(Game.creeps, (c)=>c.memory.role == 'miner'  && c.memory.station == cur_room.name).length < num_sources){
-            var name = currentSpawn.createCreep([WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE],"BigMiner"+Memory.N,{'role':'miner','station':cur_room.name});
+            var name = currentSpawn.createCreep([WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],"BigMiner"+Memory.N,{'role':'miner','station':cur_room.name});
         } 
         
         if (name != -4 && name != -6 && name != undefined){
@@ -177,7 +182,8 @@ var spawnControl = {
         } else if (_.filter(Game.creeps, (c)=>c.memory.role == 'claimer' && c.memory.station == RoomName).length < 1){
             var name = SpawnLoc.createCreep([MOVE,MOVE,CLAIM,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':RoomName});
         }
-    },
+    }
+    /*,
     
     
     station:function(role,station,needed){
@@ -236,7 +242,7 @@ var spawnControl = {
             r.createConstructionSite(origin_x - 2,origin_y + 2,STRUCTURE_STORAGE)
             a_spawn.memory[''+room_level] = true;
         }
-    }
+    }*/
 }
 
 module.exports = spawnControl;

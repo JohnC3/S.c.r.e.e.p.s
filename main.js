@@ -103,11 +103,11 @@ module.exports.loop = function () {
         // Move the troops to intercept things inc base rooms!
 
         
-        spawnControl.establish_control(s);
+        
 
         // Now that I am out of CPU.
-        //spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1);
-        //spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1);
+        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1);
+        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1);
  
     
 
