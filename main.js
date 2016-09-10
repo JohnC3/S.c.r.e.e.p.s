@@ -3,6 +3,7 @@ var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
 var roleMiner = require('role.miner');
 var roleDistributer = require('role.distributer');
+var roleLinker = require('role.linker');
 var roleTrooper = require('role.trooper');
 var roleArcher = require('role.archer')
 var roleTruck = require('role.truck');
@@ -13,35 +14,16 @@ var roleDeconstructor = require('role.deconstructor');
 var spawnControl = require('spawnControl');
 
 module.exports.loop = function () {
-    var Harvesters = _.filter(Game.creeps, (c)=>c.memory.role == 'harvester');
-    var Builders = _.filter(Game.creeps, (c)=>c.memory.role == 'builder');
-    var Upgraders = _.filter(Game.creeps, (c)=>c.memory.role == 'upgrader');
-    var Miners = _.filter(Game.creeps, (c)=>c.memory.role == 'miner');
-    var Repairer = _.filter(Game.creeps, (c)=>c.memory.role == 'repairer');
-    var Trucks = _.filter(Game.creeps, (c)=>c.memory.role == 'truck');
-    var Troops = _.filter(Game.creeps, (c)=>c.memory.role == 'trooper');
-    var Knights = _.filter(Game.creeps, (c)=>c.memory.role == 'knight');
-    var Raider = _.filter(Game.creeps, (c)=>c.memory.role == 'raider');
-    var Healer = _.filter(Game.creeps, (c)=>c.memory.role == 'healer');
-    var Claimer = _.filter(Game.creeps, (c)=>c.memory.role == 'claimer');
-    
-    
-    if (Memory.N % 20 == 1){
-        console.log("h " + Harvesters.length+" bld " + Builders.length+" up " + Upgraders.length+"\nmine " + Miners.length+" trk " + Trucks.length+"\nsol " + Troops.length+" kni " + Knights.length+" raid " + Raider.length);
-    }
-    
-    
-    
+
+    // If a miner is an old miner create a replacement but keep working.
     // role to code used in role hash
-    var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,
+    var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,'oldMiner':roleMiner,
     'truck':roleTruck,'trooper':roleTrooper,'knight':roleTrooper,'raider':roleTrooper,'healer':roleHealer,
-    'archer':roleArcher,'deconstructor':roleDeconstructor,'distributer':roleDistributer};
+    'archer':roleArcher,'deconstructor':roleDeconstructor,'distributer':roleDistributer,'linker':roleLinker};
     
     //
     if (Memory.N > 100 || Memory.N == undefined){
         Memory.N = 1;
-        //Delete danger.
-        Memory.danger = {};
     }
     
 
@@ -69,15 +51,20 @@ module.exports.loop = function () {
         roleMiner.run(r,300);
         var enemy_creeps = Game.rooms[r].find(FIND_HOSTILE_CREEPS);
         if(enemy_creeps.length > 0){
-            Game.flags.knights.setPosition( new RoomPosition(35,25, r))
+            Game.flags.knights.setPosition( new RoomPosition(27,9, r))
         } 
     }
     
 
     for(s in Game.spawns){
+
+        
+        
         
         spawnControl.run(s);
-        
+        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2);
+        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,3);
+        spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);
         // This needs to be its own module.
         var a_spawn = Game.spawns[s];
         var r = a_spawn.room;
@@ -102,13 +89,7 @@ module.exports.loop = function () {
         
         // Move the troops to intercept things inc base rooms!
 
-        
-        
 
-        // Now that I am out of CPU.
-        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1);
-        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1);
- 
     
 
 
@@ -116,8 +97,6 @@ module.exports.loop = function () {
         var tower = r.find(FIND_STRUCTURES,{filter: (structure) => (structure).structureType == STRUCTURE_TOWER})[0];
         if(tower) {
             var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-            //console.log(r)
-            //console.log(tower)
             if(closestHostile) {
                 tower.attack(closestHostile);
             }else if(tower.energy > 750){

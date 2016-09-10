@@ -11,12 +11,11 @@ var roleDistributer = {
             return ([STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_TOWER].indexOf(s.structureType) != -1 && (s).energyCapacity > (s).energy)}});
             
         var Storage = Game.getObjectById(creep.memory.assigned_storage);
+        
+        if(Storage.store[RESOURCE_ENERGY] == 0){
+            Storage = creep.pos.findClosestByRange(FIND_STRUCTURES,{filter:s => s.structureType == STRUCTURE_LINK});
+        }
 
-        var linkTo = Storage.pos.findInRange(FIND_MY_STRUCTURES, 3, 
-                {filter: s => s.structureType == STRUCTURE_LINK})[0];
-                
-        //console.log(linkTo)
-        //console.log(Storage)
         if(creep.carry.energy == 0){
             creep.memory.gathering = true;
         }
@@ -27,16 +26,11 @@ var roleDistributer = {
                 creep.memory.gathering = false;
             }
             
-            if(linkTo){
-                if(creep.withdraw(linkTo,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                    creep.moveTo(linkTo);
-                    }
-                }
-           else if(creep.withdraw(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                    creep.moveTo(Storage);
-                
+            if(creep.withdraw(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+                creep.moveTo(Storage);
             }          
-        } else{
+        } 
+        else{
             // If such a place exists go and transfer to it.
             if (drop_points.length > 0){
                 
@@ -51,7 +45,7 @@ var roleDistributer = {
                 }
             }
             
-            else if(drop_points.length == 0){
+            else{
                 creep.say('more for the pile')
                 if(creep.transfer(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
                     creep.moveTo(Storage);
