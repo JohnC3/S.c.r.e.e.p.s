@@ -57,14 +57,14 @@ module.exports.loop = function () {
     
 
     for(s in Game.spawns){
-        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2);
-        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,3);
-        spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);
+
         
         
         
         spawnControl.run(s);
-        
+        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2);
+        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,3);
+        spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);
         // This needs to be its own module.
         var a_spawn = Game.spawns[s];
         var r = a_spawn.room;
