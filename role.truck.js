@@ -2,7 +2,7 @@ var roleTruck = {
     run: function(creep){
         
         if(creep.memory.curRoom != creep.room.name){
-            creep.moveTo(new RoomPosition(25,25, creep.pos.roomName));
+            creep.moveTo(new RoomPosition(25,0, creep.pos.roomName));
             creep.say('New room');
             creep.memory.curRoom = creep.room.name;
             

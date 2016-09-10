@@ -1,4 +1,6 @@
 var spawnControl = {
+    
+    
     run:function(spawn){
         
         var currentSpawn = Game.spawns[spawn];
@@ -14,19 +16,19 @@ var spawnControl = {
         var num_links = currentSpawn.room.find(FIND_STRUCTURES, {filter : s => s.structureType == STRUCTURE_LINK} ).length;
         // The worker body changes based on energy capacity availalbe
 
-        var level_bod =   {1:[WORK,WORK,CARRY,MOVE],
+        var worker_body_by_RCL =   {1:[WORK,WORK,CARRY,MOVE],
                         2:[WORK,WORK,CARRY,MOVE,MOVE,MOVE], // The end of teir 2
                         3:[WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],//Max energy for RCL 3
                         4:[WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
                         5:[WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                        6:[WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+                        6:[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
                         7:[WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
                         8:[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
         };
         
-        var level_bod_u =   {1:[WORK,WORK,CARRY,MOVE],
-                        2:[WORK,WORK,CARRY,MOVE,MOVE,MOVE], // The end of teir 2
-                        3:[WORK,WORK,CARRY,MOVE,MOVE,MOVE],//Max energy for RCL 3
+        var upgrader_body_by_RCL =   {1:[WORK,WORK,CARRY,MOVE],
+                        2:[WORK,WORK,CARRY,MOVE,MOVE,MOVE],
+                        3:[WORK,WORK,CARRY,MOVE,MOVE,MOVE],
                         4:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
                         5:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
                         6:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
@@ -34,7 +36,7 @@ var spawnControl = {
                         8:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
         };
         
-        var level_bod_truck =   {1:[MOVE,MOVE,CARRY,CARRY],
+        var truck_body_by_RCL =   {1:[MOVE,MOVE,CARRY,CARRY],
                         2:[MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY], // The end of teir 2
                         3:[MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY],//Max energy for RCL 3
                         4:[MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY,MOVE,MOVE,CARRY,CARRY],
@@ -46,11 +48,12 @@ var spawnControl = {
         
         // Intended to create larger creeps.
         
-        var workerBody = level_bod[cur_controler.level];
+        var workerBody = worker_body_by_RCL[cur_controler.level];
 
-        var upgraderBody = level_bod_u[cur_controler.level];
+        var upgraderBody = upgrader_body_by_RCL[cur_controler.level];
         
-        var transportBody = level_bod_truck[cur_controler.level];
+        transportBody = truck_body_by_RCL[cur_controler.level];
+
 
         if (workerBody == undefined){
             var workerBody = [WORK,WORK,CARRY,MOVE];
@@ -58,12 +61,6 @@ var spawnControl = {
             console.log(room_development);
         }
         
-        
-        
-        
-        
-            //var combatBody = [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK]
-    
         var Harvesters = _.filter(Game.creeps, (c)=>c.memory.role == 'harvester' && c.room == currentSpawn.room);
         var Builders = _.filter(Game.creeps, (c)=>c.memory.role == 'builder' && c.room == currentSpawn.room);
         var Upgraders = _.filter(Game.creeps, (c)=>c.memory.role == 'upgrader' && c.room == currentSpawn.room);
@@ -91,7 +88,7 @@ var spawnControl = {
             console.log('Emergency spawning upgrader')
         }
         
-        if (Trucks.length == 0){
+        if (Trucks.length == 0 && num_links < num_sources + 1){
             currentSpawn.createCreep([CARRY,CARRY,MOVE,MOVE],"ETruck"+Memory.N,{'role':'truck','collect_dropped':true});
             console.log('Emergency spawning truck')
         }
@@ -148,7 +145,7 @@ var spawnControl = {
         } 
         
         if(cur_room.find(FIND_STRUCTURES,{filter: s => s.structureType == STRUCTURE_STORAGE }).length == 1){
-            if (_.filter(Game.creeps, (c)=>c.memory.role == 'distributer' && c.memory.station == cur_room.name).length < 2){
+            if (_.filter(Game.creeps, (c)=>c.memory.role == 'distributer' && c.memory.station == cur_room.name).length < 1){
                 var name = currentSpawn.createCreep(transportBody,"Distributer"+Memory.N,{'role':'distributer','station':cur_room.name,'droplocation':cur_room.name});
             }
         }
@@ -160,7 +157,9 @@ var spawnControl = {
             } else if (_.filter(Game.creeps, (c)=>c.memory.role == 'truck' && c.memory.station == cur_room.name).length < num_sources+1){ //Math.floor(2 * num_sources)+1){
                 var name = currentSpawn.createCreep(transportBody,"Truck"+Memory.N,{'role':'truck','collect_dropped':false,'station':cur_room.name,'droplocation':cur_room.name});
             }
-        } else{ //if(num_links == num_sources + 1){
+        } 
+        
+        if(num_links > 2){
             if(_.filter(Game.creeps, (c)=>c.memory.role == 'linker'  && c.room.name == cur_room.name).length < 1){
                 var name = currentSpawn.createCreep([CARRY,CARRY,CARRY,CARRY,MOVE],'Linker'+Memory.N,{'role':'linker'})
             }
@@ -177,11 +176,11 @@ var spawnControl = {
             }
 
     },
-    remote_source_mine:function(RoomName,SpawnLoc){
+    remote_source_mine:function(RoomName,SpawnLoc,NumTrucks){
         if (_.filter(Game.creeps, (c)=>c.memory.role == 'miner' && c.memory.station == RoomName).length < 1){
             var name = SpawnLoc.createCreep([WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE],"RemoteMiner"+Memory.N,{'role':'miner','station':RoomName});
-        } else if (_.filter(Game.creeps, (c)=>c.memory.role == 'truck' && c.memory.station == RoomName).length <  2){
-            var name = SpawnLoc.createCreep([CARRY,MOVE,CARRY,MOVE,CARRY,MOVE,CARRY,MOVE,CARRY,MOVE,CARRY,MOVE,CARRY,MOVE],"RemoteTruck"+Memory.N,{'role':'truck','collect_dropped':true,'station':RoomName,'droplocation':SpawnLoc.room.name});
+        } else if (_.filter(Game.creeps, (c)=>c.memory.role == 'truck' && c.memory.station == RoomName).length <  NumTrucks){
+            var name = SpawnLoc.createCreep(transportBody,"RemoteTruck"+Memory.N,{'role':'truck','collect_dropped':true,'station':RoomName,'droplocation':SpawnLoc.room.name});
         } else if (_.filter(Game.creeps, (c)=>c.memory.role == 'claimer' && c.memory.station == RoomName).length < 1){
             var name = SpawnLoc.createCreep([MOVE,MOVE,CLAIM,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':RoomName});
         }

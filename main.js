@@ -14,24 +14,7 @@ var roleDeconstructor = require('role.deconstructor');
 var spawnControl = require('spawnControl');
 
 module.exports.loop = function () {
-    var Harvesters = _.filter(Game.creeps, (c)=>c.memory.role == 'harvester');
-    var Builders = _.filter(Game.creeps, (c)=>c.memory.role == 'builder');
-    var Upgraders = _.filter(Game.creeps, (c)=>c.memory.role == 'upgrader');
-    var Miners = _.filter(Game.creeps, (c)=>c.memory.role == 'miner');
-    var Repairer = _.filter(Game.creeps, (c)=>c.memory.role == 'repairer');
-    var Trucks = _.filter(Game.creeps, (c)=>c.memory.role == 'truck');
-    var Troops = _.filter(Game.creeps, (c)=>c.memory.role == 'trooper');
-    var Knights = _.filter(Game.creeps, (c)=>c.memory.role == 'knight');
-    var Raider = _.filter(Game.creeps, (c)=>c.memory.role == 'raider');
-    var Healer = _.filter(Game.creeps, (c)=>c.memory.role == 'healer');
-    var Claimer = _.filter(Game.creeps, (c)=>c.memory.role == 'claimer');
-    
-    
-    if (Memory.N % 50 == 1){
-        console.log("h " + Harvesters.length+" bld " + Builders.length+" up " + Upgraders.length+"\nmine " + Miners.length+" trk " + Trucks.length+"\nsol " + Troops.length+" kni " + Knights.length+" raid " + Raider.length);
-    }
-    
-    
+
     // If a miner is an old miner create a replacement but keep working.
     // role to code used in role hash
     var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,'oldMiner':roleMiner,
@@ -41,8 +24,6 @@ module.exports.loop = function () {
     //
     if (Memory.N > 100 || Memory.N == undefined){
         Memory.N = 1;
-        //Delete danger.
-        Memory.danger = {};
     }
     
 
@@ -103,13 +84,9 @@ module.exports.loop = function () {
         
         // Move the troops to intercept things inc base rooms!
 
-        
-        
-
-        // Now that I am out of CPU.
-        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1);
-        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1);
- 
+        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,3);
+        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,4);
+        spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);
     
 
 
