@@ -68,8 +68,7 @@ var roleBuilder = {
                 var mostDamagedStructure = _.sortBy(damagedStructures,'hits');
                 
                 creep.memory.repair_priority = mostDamagedStructure[0].id;
-                //console.log(Memory.repair_priority);
-                
+
     	    } else{
                 if(creep.repair(repair_target) == ERR_NOT_IN_RANGE){
                     creep.moveTo(repair_target);

@@ -3,6 +3,7 @@ var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
 var roleMiner = require('role.miner');
 var roleDistributer = require('role.distributer');
+var roleLinker = require('role.linker');
 var roleTrooper = require('role.trooper');
 var roleArcher = require('role.archer')
 var roleTruck = require('role.truck');
@@ -26,7 +27,7 @@ module.exports.loop = function () {
     var Claimer = _.filter(Game.creeps, (c)=>c.memory.role == 'claimer');
     
     
-    if (Memory.N % 20 == 1){
+    if (Memory.N % 50 == 1){
         console.log("h " + Harvesters.length+" bld " + Builders.length+" up " + Upgraders.length+"\nmine " + Miners.length+" trk " + Trucks.length+"\nsol " + Troops.length+" kni " + Knights.length+" raid " + Raider.length);
     }
     
@@ -35,7 +36,7 @@ module.exports.loop = function () {
     // role to code used in role hash
     var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,'oldMiner':roleMiner,
     'truck':roleTruck,'trooper':roleTrooper,'knight':roleTrooper,'raider':roleTrooper,'healer':roleHealer,
-    'archer':roleArcher,'deconstructor':roleDeconstructor,'distributer':roleDistributer};
+    'archer':roleArcher,'deconstructor':roleDeconstructor,'distributer':roleDistributer,'linker':roleLinker};
     
     //
     if (Memory.N > 100 || Memory.N == undefined){
@@ -116,8 +117,6 @@ module.exports.loop = function () {
         var tower = r.find(FIND_STRUCTURES,{filter: (structure) => (structure).structureType == STRUCTURE_TOWER})[0];
         if(tower) {
             var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-            //console.log(r)
-            //console.log(tower)
             if(closestHostile) {
                 tower.attack(closestHostile);
             }else if(tower.energy > 750){

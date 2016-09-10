@@ -41,7 +41,6 @@ var roleTruck = {
                 var containersWithEnergy = creep.room.find(FIND_STRUCTURES, {filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0});
                 // Choose the fullest.
                 var constructions = _.sortBy(containersWithEnergy,function(c) {return [c.store[RESOURCE_ENERGY]];})
-                //console.log(constructions)
 
                 if(creep.memory.collect_dropped) {
                     var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES);
