@@ -111,12 +111,12 @@ var spawnControl = {
             if (Archers.length < 8){
                 var name = currentSpawn.createCreep([MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK],"Archer"+Memory.N,{'role':'archer','rally_flag':'archers'});
     
-            } else if (Knights.length < 2){
+            } else if (Knights.length < 4){
                 var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],"Knight"+Memory.N,{'role':'knight','rally_flag':'knights'});
                 //var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK],"Knight"+Memory.N,{'role':'knight','rally_flag':'knights'});
     
             } else if (Healer.length < 1){
-                var name = currentSpawn.createCreep([HEAL,HEAL,MOVE,MOVE],"Healer"+Memory.N,{'role':'healer','rally_flag':'knights'});
+                var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,HEAL,HEAL,HEAL,HEAL],"Healer"+Memory.N,{'role':'healer','rally_flag':'knights'});
             
             if (Deconstructors.length < 3){
             var name = Game.spawns.Spawn1.createCreep([WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],"DemoManr"+Memory.N,{'role':'deconstructor'});

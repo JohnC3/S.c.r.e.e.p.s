@@ -31,9 +31,9 @@ module.exports.loop = function () {
     }
     
     
-    
+    // If a miner is an old miner create a replacement but keep working.
     // role to code used in role hash
-    var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,
+    var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,'oldMiner':roleMiner,
     'truck':roleTruck,'trooper':roleTrooper,'knight':roleTrooper,'raider':roleTrooper,'healer':roleHealer,
     'archer':roleArcher,'deconstructor':roleDeconstructor,'distributer':roleDistributer};
     

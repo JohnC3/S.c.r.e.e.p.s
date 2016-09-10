@@ -9,12 +9,12 @@ var roleBuilder = {
      */ 
      
         
-        //if(creep.room.find(FIND_CONSTRUCTION_SITES).length > 0){
+        if(creep.room.find(FIND_CONSTRUCTION_SITES).length > 0){
             roleBuilder.build_Site(creep);
-        //}
-        //else{
-        //    roleBuilder.fix(creep);
-        //}
+        }
+        else{
+            roleBuilder.fix(creep);
+        }
     },
     build_Site:function(creep){
         var constructionSite = Game.getObjectById(creep.memory.build_priority);
@@ -48,7 +48,49 @@ var roleBuilder = {
             }
 	    }
 	    else {
-            var storedResource = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+	        roleBuilder.getEnergy(creep);
+
+	    }
+	}, 
+	fix:function(creep){
+	    if(creep.memory.repairing == undefined){
+	        creep.memory.repairing = false;
+	    }
+	    if(creep.carry.energy == 0) {
+            creep.memory.repairing = false;
+        }
+	    
+	    if(creep.memory.repairing){
+    	    var repair_target = Game.getObjectById(creep.memory.repair_priority);
+    	    
+    	    if(repair_target == undefined || repair_target.hits == repair_target.hitsMax){
+    	        var damagedStructures = creep.room.find(FIND_STRUCTURES,{filter: (structure) => structure.hits < structure.hitsMax})
+                var mostDamagedStructure = _.sortBy(damagedStructures,'hits');
+                
+                creep.memory.repair_priority = mostDamagedStructure[0].id;
+                //console.log(Memory.repair_priority);
+                
+    	    } else{
+                if(creep.repair(repair_target) == ERR_NOT_IN_RANGE){
+                    creep.moveTo(repair_target);
+        	    }   
+            }	        
+	    }
+	    // If you are not working go pick up energy from a container.
+	    else{
+	        // Reset the priority.
+	        creep.memory.repair_priority = undefined
+	        
+	        if(creep.energy == creep.energyCapacity){
+	            creep.memory.repairing = true;
+	        }
+	        // Get energy
+            roleBuilder.getEnergy(creep);
+   	    }
+    },
+   	getEnergy:function(creep){
+   	    
+   	        var storedResource = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (resource) => 
                     (resource.structureType == STRUCTURE_CONTAINER && resource.store[RESOURCE_ENERGY] > 500) ||
                     (resource.structureType == STRUCTURE_LINK && resource.energy > 500) ||
@@ -66,29 +108,9 @@ var roleBuilder = {
 	                
 	                if(creep.pickup(dropped_e[0]) == ERR_NOT_IN_RANGE){
 	                    creep.moveTo(dropped_e[0]);
-	                    
 	                }
-	                
 	            }
 	        }
-	    }
-	}, 
-	fix:function(creep){
-	    creep.say('fixing')
-	    var repair_target = Game.getObjectById(Memory.repair_priority);
-	    
-	    if(repair_target == undefined || repair_target.hits < repair_target.hitsMax || Memory.N % 50 == 1){
-	        var damagedStructures = creep.room.find(FIND_STRUCTURES,{filter: (structure) => structure.hits < structure.hitsMax})
-            var mostDamagedStructure = _.sortBy(damagedStructures,'hits');
-            
-            Memory.repair_priority = mostDamagedStructure[0].id;
-	    } else if(creep.repair(repair_target) == ERR_NOT_IN_RANGE){
-                
-            creep.moveTo(repair_target);
-            
-        } else{
-            creep.moveTo(Game.flags.Idle)
-        }
    	}
 };
 

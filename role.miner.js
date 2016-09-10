@@ -27,6 +27,10 @@ var roleMiner = {
         
         for (i=0; i<miners.length; i++) {
             
+            if(miners[i].ticksToLive < 50){
+                miners[i].role = 'oldMiner'
+            }
+            
             if (miners[i].memory.station == undefined) {
                 miners[i].memory.station = miners[i].memory.currRoom;
                 
