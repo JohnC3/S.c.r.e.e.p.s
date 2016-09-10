@@ -51,7 +51,7 @@ module.exports.loop = function () {
         roleMiner.run(r,300);
         var enemy_creeps = Game.rooms[r].find(FIND_HOSTILE_CREEPS);
         if(enemy_creeps.length > 0){
-            Game.flags.knights.setPosition( new RoomPosition(35,25, r))
+            Game.flags.knights.setPosition( new RoomPosition(27,9, r))
         } 
     }
     
@@ -84,8 +84,8 @@ module.exports.loop = function () {
         
         // Move the troops to intercept things inc base rooms!
 
-        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,3);
-        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,4);
+        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2);
+        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,3);
         spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);
     
 

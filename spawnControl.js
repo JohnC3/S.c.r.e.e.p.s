@@ -27,13 +27,13 @@ var spawnControl = {
         };
         
         var upgrader_body_by_RCL =   {1:[WORK,WORK,CARRY,MOVE],
-                        2:[WORK,WORK,CARRY,MOVE,MOVE,MOVE],
-                        3:[WORK,WORK,CARRY,MOVE,MOVE,MOVE],
-                        4:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-                        5:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                        6:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                        7:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                        8:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+                        2:[WORK,WORK,CARRY,MOVE,MOVE],
+                        3:[WORK,WORK,CARRY,MOVE,MOVE],
+                        4:[WORK,WORK,WORK,CARRY,MOVE,MOVE],
+                        5:[WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE],
+                        6:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE],
+                        7:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE],
+                        8:[WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE],
         };
         
         var truck_body_by_RCL =   {1:[MOVE,MOVE,CARRY,CARRY],
@@ -140,7 +140,7 @@ var spawnControl = {
         if (Builders.length < 2){
             var name = currentSpawn.createCreep(workerBody,"builder"+Memory.N,{'role':'builder'});
         }
-        else if (Upgraders.length <  2*num_sources){
+        else if (Upgraders.length <  Math.floor(1.5*num_sources)){
             var name = currentSpawn.createCreep(upgraderBody,"upgrader"+Memory.N,{'role':'upgrader'});
         } 
         
