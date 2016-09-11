@@ -54,13 +54,14 @@ module.exports.loop = function () {
             Game.flags.knights.setPosition( new RoomPosition(27,9, r))
         } 
     }
-    
+
+    spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2);
+    spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,3);
+    spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);  
 
     for(s in Game.spawns){
 
-        spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2);
-        spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,3);
-        spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);
+
         
         
         spawnControl.run(s);

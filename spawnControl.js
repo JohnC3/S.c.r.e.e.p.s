@@ -79,7 +79,7 @@ var spawnControl = {
             console.log(''+cur_room.name+"\nh " + Harvesters.length+" bld " + Builders.length+" up " + Upgraders.length+"\nmine " + Miners.length+" trk " + Trucks.length+"\nsol " + Troops.length+" kni " + Knights.length+" raid " + Raider.length);
         }
         
-        if (Miners.length == 0 && currentSpawn.canCreateCreep(workerBody) != OK && Harvesters.length < 4){
+        if (Miners.length == 0 && currentSpawn.canCreateCreep(workerBody) != OK && Harvesters.length < num_sources){
             currentSpawn.createCreep([WORK,MOVE,CARRY,MOVE],"Eharvester"+Memory.N,{'role':'harvester','emergency':true});
             console.log('Emergency spawning harvester' + cur_room.name)
         }
@@ -165,7 +165,7 @@ var spawnControl = {
         } 
         
         if(cur_room.find(FIND_STRUCTURES,{filter: s => s.structureType == STRUCTURE_STORAGE }).length == 1){
-            if (_.filter(Game.creeps, (c)=>c.memory.role == 'distributer' && c.room.name == cur_room.name && c.memory.emergency == false && c.ticksToLive > 100).length < 1){
+            if (_.filter(Game.creeps, (c)=>c.memory.role == 'distributer' && c.room.name == cur_room.name && c.memory.emergency != true && c.ticksToLive > 100).length < 1){
                 var name = currentSpawn.createCreep(transportBody,"Distributer"+Memory.N,{'role':'distributer','station':cur_room.name,'droplocation':cur_room.name});
             }
         }

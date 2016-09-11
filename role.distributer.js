@@ -46,7 +46,6 @@ var roleDistributer = {
             }
             
             else{
-                creep.say('more for the pile')
                 if(creep.transfer(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
                     creep.moveTo(Storage);
                 }

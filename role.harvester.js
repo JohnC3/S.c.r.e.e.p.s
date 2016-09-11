@@ -9,9 +9,17 @@ var roleHarvester = {
         
         if( creep.memory.action == 'dropoff'){
             // Looks for every container in the room that needs energy
-            var drop_points = creep.room.find(FIND_STRUCTURES, { filter: (s) => {
+            
+            if(creep.memory.emergency){
+                var drop_points = creep.room.find(FIND_STRUCTURES, { filter: (s) => {
+                    return ([STRUCTURE_EXTENSION].indexOf(s.structureType) != -1 && (s).energyCapacity > (s).energy)}});
+            }
+            else{
+                var drop_points = creep.room.find(FIND_STRUCTURES, { filter: (s) => {
                 //return ([STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_TOWER].indexOf(s.structureType) != -1 && (s).energyCapacity > (s).energy)}});
                 return ([STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_TOWER,STRUCTURE_CONTAINER].indexOf(s.structureType) != -1 && (s).energyCapacity > (s).energy)}});
+            
+            }
             
             // If such a place exists go and transfer to it.
             if (drop_points.length > 0){
