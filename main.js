@@ -12,6 +12,7 @@ var roleHealer = require('role.healer');
 var roleArcher = require('role.archer');
 var roleDeconstructor = require('role.deconstructor');
 var spawnControl = require('spawnControl');
+var tower = require('towerControl')
 
 module.exports.loop = function () {
 
@@ -61,9 +62,6 @@ module.exports.loop = function () {
 
     for(s in Game.spawns){
 
-
-        
-        
         spawnControl.run(s);
         
         // This needs to be its own module.
@@ -77,8 +75,6 @@ module.exports.loop = function () {
         var linkTo = r_storage.pos.findInRange(FIND_MY_STRUCTURES, 2, 
             {filter: {structureType: STRUCTURE_LINK}})[0];
         
-        
-        
         for(var i in sources){
             
             var linkFrom = sources[i].pos.findInRange(FIND_MY_STRUCTURES, 3, 
@@ -88,48 +84,13 @@ module.exports.loop = function () {
             }
         }
         
-        // Move the troops to intercept things inc base rooms!
+        
         if (_.filter(Game.creeps, (c)=>c.memory.role == 'claimer' && c.memory.station == 'E27N51').length < 1){
             var name = Game.spawns.Spawn1.createCreep([MOVE,MOVE,CLAIM,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':'E27N51'});
         }
-
-    
-
-
         
-        var tower = r.find(FIND_STRUCTURES,{filter: (structure) => (structure).structureType == STRUCTURE_TOWER})[0];
-        if(tower) {
-            var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-            if(closestHostile) {
-                tower.attack(closestHostile);
-            }else if(tower.energy > 750){
-                var rampart = tower.pos.findClosestByRange(FIND_STRUCTURES, {
-                    filter: (structure) => (structure).hits < 1000 && 
-                    (structure).structureType == STRUCTURE_RAMPART
-                    });
-                if(rampart) {
-                   tower.repair(rampart);
-                } 
-                else{
-                
-                    var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
-                        filter: (structure) => (structure).hits < (structure).hitsMax && 
-                        (structure).structureType != STRUCTURE_WALL && 
-                        (structure).structureType != STRUCTURE_RAMPART
-                        });
-                    if(closestDamagedStructure) {
-                       tower.repair(closestDamagedStructure);
-                    }
-                }
-                
-            }
-        }
+        // Run the tower code
+        tower.run(r);
+
     }
-    
-
-
-
-
-    
-
 }
