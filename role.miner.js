@@ -46,7 +46,16 @@ var roleMiner = {
                 }
                 
                 
-	            miners[i].moveTo(miners[i].pos.findClosestByPath(miners[i].room.findExitTo(miners[i].memory.station)));
+	            var moveAttempt = miners[i].moveTo(miners[i].pos.findClosestByRange(miners[i].room.findExitTo(miners[i].memory.station)));
+                if(moveAttempt == -2){
+                    var creep = miners[a];
+                    if(creep.pos.x == 49){
+                        creep.move(LEFT);
+                    } else if(creep.pos.x == 0){
+                        creep.move(RIGHT);
+                    }
+                    
+                } 
 	        } else if (miners[i].memory.station == miners[i].room.name){
 	            //miners[i].say('on station')
 	            
