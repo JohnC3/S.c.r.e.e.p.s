@@ -133,7 +133,7 @@ var spawnControl = {
             //    }
             
         }
-        
+
         
                 // Builders!
         if (Builders.length < num_sources){
@@ -153,11 +153,7 @@ var spawnControl = {
             }
         } 
         
-        if(num_links > 2){
-            if(_.filter(Game.creeps, (c)=>c.memory.role == 'linker'  && c.room.name == cur_room.name && c.ticksToLive > 50).length < 1){
-                var name = currentSpawn.createCreep([CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE],'Linker'+Memory.N,{'role':'linker'})
-            }
-        }
+
         
         // Create a miner for every source in a room.
         if (_.filter(Game.creeps, (c)=>c.memory.role == 'miner'  && c.memory.station == cur_room.name && c.ticksToLive > 50).length < num_sources){
@@ -168,7 +164,14 @@ var spawnControl = {
             if (_.filter(Game.creeps, (c)=>c.memory.role == 'distributer' && c.room.name == cur_room.name && c.memory.emergency != true && c.ticksToLive > 100).length < 1){
                 var name = currentSpawn.createCreep(transportBody,"Distributer"+Memory.N,{'role':'distributer','station':cur_room.name,'droplocation':cur_room.name});
             }
+            if(num_links >= 2){
+                if(_.filter(Game.creeps, (c)=>c.memory.role == 'linker'  && c.room.name == cur_room.name && c.ticksToLive > 50).length < 1){
+                    var name = currentSpawn.createCreep([CARRY,CARRY,MOVE],'Linker'+Memory.N,{'role':'linker'})
+                }
+            }
         }
+        
+
         
         
         if (name != -4 && name != -6 && name != undefined){

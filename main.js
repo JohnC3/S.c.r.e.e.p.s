@@ -89,7 +89,9 @@ module.exports.loop = function () {
         }
         
         // Move the troops to intercept things inc base rooms!
-
+        if (_.filter(Game.creeps, (c)=>c.memory.role == 'claimer' && c.memory.station == 'E27N51').length < 1){
+            var name = Game.spawns.Spawn1.createCreep([MOVE,MOVE,CLAIM,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':'E27N51'});
+        }
 
     
 
