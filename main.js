@@ -10,6 +10,7 @@ var roleTruck = require('role.truck');
 var roleClaim = require('role.claim');
 var roleHealer = require('role.healer');
 var roleArcher = require('role.archer');
+var roleCollector = require('role.collector');
 var roleDeconstructor = require('role.deconstructor');
 var spawnControl = require('spawnControl');
 var tower = require('towerControl')
@@ -18,7 +19,7 @@ module.exports.loop = function () {
 
     // If a miner is an old miner create a replacement but keep working.
     // role to code used in role hash
-    var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,'oldMiner':roleMiner,
+    var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,'collector':roleCollector,
     'truck':roleTruck,'trooper':roleTrooper,'knight':roleTrooper,'raider':roleTrooper,'healer':roleHealer,
     'archer':roleArcher,'deconstructor':roleDeconstructor,'distributer':roleDistributer,'linker':roleLinker};
     
@@ -34,16 +35,24 @@ module.exports.loop = function () {
         }
         
     }
+    
+    Memory.miners = new Array();
+    
     // Loop that lists a creep name and role for every creep.
     for(var name in Game.creeps) {
         
         
         
         var creep = Game.creeps[name];
-
+        
+        if (creep.memory.role == 'miner'){
+            Memory.miners.push(creep);
+        }
+            
         if (creep.memory.role != 'miner'){
             creep_type[creep.memory.role].run(creep);
         }
+
     }
     
     
@@ -57,7 +66,7 @@ module.exports.loop = function () {
     }
 
     spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2);
-    spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,3);
+    spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,2);
     spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);  
 
     for(s in Game.spawns){

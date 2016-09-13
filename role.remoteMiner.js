@@ -40,7 +40,7 @@ var roleMiner = {
                     if (CS.room.name != miners[i].memory.station){
                         
                         miners[i].memory.currSource = false;
-                        //console.log(''+miners[i].name+ 'Weird mine error')
+                        console.log(''+miners[i].name+ 'Weird mine error')
                     }
                     
                 }
@@ -71,7 +71,7 @@ var roleMiner = {
                     let Y = sources[a].pos.y;
                     var sourceMinerCap = 8;// _.filter(miners[i].room.lookForAtArea(LOOK_TERRAIN, Y-1, X-1, Y+1, X+1, true), p => p.terrain == 'normal' || p.terrain == 'swamp').length;
                     
-                    var minersOnSource = 0;
+                    var minersOnSource = miners[i].room.lookForAtArea(LOOK_CREEPS, Y-1, X-1, Y+1, X+1, true).length;
                     
                     for (j=0; j<miners.length; j++) {
                         if (miners[j].memory.currSource == sources[a].id) {
@@ -96,19 +96,23 @@ var roleMiner = {
                         });
             	       
             	        if (link.length > 0) {
-            	            
         	                var j = miners[i].transfer(link[0], RESOURCE_ENERGY);
-        	            }         
-        	            else {
+        	            } else {
+
         	                miners[i].drop(RESOURCE_ENERGY);
         	            }
-        	        //miners[i].drop(RESOURCE_ENERGY);
                 }
                 var target = Game.getObjectById(miners[i].memory.currSource);
                 //then harvest sources
-                if (miners[i].harvest(target) == ERR_NOT_IN_RANGE) {
+                var harvest_outcome = miners[i].harvest(target);
+                if (harvest_outcome == ERR_NOT_IN_RANGE) {
                     miners[i].moveTo(target);
+                } else if(harvest_outcome == OK){
+	                if(creep.pos.lookFor(LOOK_STRUCTURES).length == 0){
+	                    creep.room.createConstructionSite(creep.pos,STRUCTURE_CONTAINER)
+	                }                    
                 }
+
 	        }
         }
         

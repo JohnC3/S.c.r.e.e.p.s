@@ -25,10 +25,13 @@ var roleDistributer = {
             if(creep.carry.energy == creep.carryCapacity){
                 creep.memory.gathering = false;
             }
-            
-            if(creep.withdraw(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+            if(drop_points.length > 0){
+                if(creep.withdraw(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+                    creep.moveTo(Storage);
+                }
+            } else{
                 creep.moveTo(Storage);
-            }          
+            }
         } 
         else{
             // If such a place exists go and transfer to it.
