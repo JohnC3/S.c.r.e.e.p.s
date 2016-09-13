@@ -1,7 +1,8 @@
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
-var roleMiner = require('role.miner');
+var roleMiner = require('role.remoteMiner');
+//var roleMiner = require('role.miner');
 var roleDistributer = require('role.distributer');
 var roleLinker = require('role.linker');
 var roleTrooper = require('role.trooper');
@@ -37,6 +38,7 @@ module.exports.loop = function () {
     }
     
     Memory.miners = new Array();
+    Memory.occupied_sources = new Array();
     
     // Loop that lists a creep name and role for every creep.
     for(var name in Game.creeps) {
@@ -47,18 +49,18 @@ module.exports.loop = function () {
         
         if (creep.memory.role == 'miner'){
             Memory.miners.push(creep);
-        }
+       }
             
-        if (creep.memory.role != 'miner'){
+        //if (creep.memory.role != 'miner'){
             creep_type[creep.memory.role].run(creep);
-        }
+        //}
 
     }
     
     
     for( var r in Game.rooms){
 
-        roleMiner.run(r,300);
+        //roleMiner.run(r,300);
         var enemy_creeps = Game.rooms[r].find(FIND_HOSTILE_CREEPS);
         if(enemy_creeps.length > 0){
             Game.flags.knights.setPosition( new RoomPosition(27,9, r))
@@ -66,7 +68,7 @@ module.exports.loop = function () {
     }
 
     spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2);
-    spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,2);
+    spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,3);
     spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);  
 
     for(s in Game.spawns){

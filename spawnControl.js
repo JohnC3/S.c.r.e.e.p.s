@@ -122,7 +122,7 @@ var spawnControl = {
         }
         else{
             
-            if (Knights.length < 3){
+            if (Knights.length < 2){
                 var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],"Knight"+Memory.N,{'role':'knight','rally_flag':'knights'});
             } 
             
@@ -144,12 +144,13 @@ var spawnControl = {
         
         
         
-        var construction_sites = cur_room.find(FIND_CONSTRUCTION_SITES).length
+        var construction_sites = cur_room.find(FIND_CONSTRUCTION_SITES)
         
         var r_storage = cur_room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_STORAGE})[0];
         
         // Builders!
-        if (Builders.length < num_sources && (construction_sites.length > 0 || r_storage.store[RESOURCE_ENERGY] > 10000)){
+
+        if (Builders.length < num_sources && (construction_sites.length > 0 || r_storage.store[RESOURCE_ENERGY] > 100000)){
             var name = currentSpawn.createCreep(workerBody,"builder"+Memory.N,{'role':'builder'});
         }
         else if (Upgraders.length <  Math.floor(1.5*num_sources)){

@@ -32,7 +32,7 @@ var roleTruck = {
                 creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
             }
             else{
-                if(creep.carry.energy > 0){
+                if(creep.carry.energy > creep.carryCapacity){
                     creep.memory.gathering = false;
                 }
                 
@@ -48,6 +48,7 @@ var roleTruck = {
                         
                         if(creep.pickup(dropped_e[0]) == ERR_NOT_IN_RANGE){
                              creep.moveTo(dropped_e[0]);
+                             creep.pickup(dropped_e[0]);
                         }
                     }
                 }

@@ -2,132 +2,105 @@
 
 var roleMiner = {
 
-    run: function(room) {
+    run: function(creep) {
         
-
-        var miners = _.filter(Game.creeps, function (c) { return c.room.name == room && c.memory.role == 'miner'});
-        var sources = Game.rooms[room].find(FIND_SOURCES);
+        //var miners = _.filter(Game.creeps, function (c) { return c.room.name == room && c.memory.role == 'miner'});
         
-        var freeMiners = new Array();
-        for (a=0; a<miners.length; a++) {
-            //if new room
-            if (miners[a].memory.currRoom != miners[a].room.name) {
-                miners[a].memory.currRoom = miners[a].room.name;
-                miners[a].memory.currSource = false;
-                miners[a].moveTo(new RoomPosition(25,25, miners[a].pos.roomName));
-                miners[a].say('new room')
-            }
-
-            //find miners without source            
-            if (!miners[a].memory.currSource) {
-                freeMiners.push(miners[a]);
-                
-            }
-        }
-        
-        for (i=0; i<miners.length; i++) {
-
-            if (miners[i].memory.station == undefined) {
-                miners[i].memory.station = miners[i].memory.currRoom;
+        if(creep.room.name != creep.memory.station){
+            var moveAttempt = creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
+            if(moveAttempt == -2){
+                var creep = miners[a];
+                if(creep.pos.x == 49){
+                    creep.move(LEFT);
+                } else if(creep.pos.x == 0){
+                    creep.move(RIGHT);
+                }
                 
             }
             
-            if (miners[i].memory.station != miners[i].room.name) {
-                
-                // But they have been assigned to a source already!
-                if (miners[i].memory.currSource != false){
-                    var CS = Game.getObjectById(miners[i].memory.currSource)
-                    if (CS.room.name != miners[i].memory.station){
-                        
-                        miners[i].memory.currSource = false;
-                        console.log(''+miners[i].name+ 'Weird mine error')
-                    }
-                    
+            
+            
+        } 
+        // Move to a unoccupied source!
+        else if(creep.room.name == creep.memory.station){
+            
+            // Check if you are mining in a core base or mining remotely.
+            if(creep.memory.remote == undefined){
+                if(creep.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_SPAWN}).length > 0){
+                    creep.memory.remote = false;
+                }else{
+                    creep.memory.remote = true;
                 }
+            }
+            
+            // Choose source.
+            var sources = creep.room.find(FIND_SOURCES);
+            
+            for(i in sources){
                 
+                var CS = sources[i].id;
                 
-	            var moveAttempt = miners[i].moveTo(miners[i].pos.findClosestByRange(miners[i].room.findExitTo(miners[i].memory.station)));
-                if(moveAttempt == -2){
-                    var creep = miners[a];
-                    if(creep.pos.x == 49){
-                        creep.move(LEFT);
-                    } else if(creep.pos.x == 0){
-                        creep.move(RIGHT);
-                    }
-                    
+                var current_miners = _.filter(Game.creeps,c => c.memory.role == 'miner' && c.memory.currSource == CS);
+                
+                if (current_miners.length == 0){
+                    creep.memory.currSource = CS;
                 } 
-	        } else if (miners[i].memory.station == miners[i].room.name){
-	            //miners[i].say('on station')
-	            
-	            var target = Game.getObjectById(miners[i].memory.currSource);
-                //then harvest sources
-                if (miners[i].harvest(target) == ERR_NOT_IN_RANGE) {
-                    miners[i].moveTo(target);
-                }
-                //assign miners to sources
-                for (a=0; a<sources.length; a++) {
+            }
 
-                    let X = sources[a].pos.x;
-                    let Y = sources[a].pos.y;
-                    var sourceMinerCap = 8;// _.filter(miners[i].room.lookForAtArea(LOOK_TERRAIN, Y-1, X-1, Y+1, X+1, true), p => p.terrain == 'normal' || p.terrain == 'swamp').length;
-                    
-                    var minersOnSource = miners[i].room.lookForAtArea(LOOK_CREEPS, Y-1, X-1, Y+1, X+1, true).length;
-                    
-                    for (j=0; j<miners.length; j++) {
-                        if (miners[j].memory.currSource == sources[a].id) {
-                            minersOnSource++;
-                        }
-                    }
-                    
-                    var numberToAdd = Math.floor(Math.min(miners.length / sources.length, sourceMinerCap) - minersOnSource);
-    
-                    for (j=0; j < Math.min(numberToAdd, freeMiners.length); j++) {
-                        Game.getObjectById(freeMiners[j].id).memory.currSource = sources[a].id;   
-                        freeMiners.shift();
-                    }
-                }
+            var target = Game.getObjectById(creep.memory.currSource);
+            if (creep.harvest(target) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(target);
+            }
+            
+            if (creep.carry.energy == creep.carryCapacity) {
                 
-                //var creep = miners[i];
-        	    //drop resouces if full capacity      
-                if (miners[i].carry.energy == miners[i].carryCapacity) {
+                // Two cases depending on if a miner is remote or not.
+                
+                
+                if(creep.memory.remote){
+                    roleMiner.remote(creep);
+                    
+                } else{
                     //THIS IS SUPER CPU INTENSIVE!
-                    var link = miners[i].pos.findInRange(FIND_STRUCTURES, 2, { 
+                    var link = creep.pos.findInRange(FIND_STRUCTURES, 2, { 
                         filter: (structure) => structure.structureType == STRUCTURE_LINK && structure.energy < structure.energyCapacity
                         });
             	       
-            	        if (link.length > 0) {
-        	                var j = miners[i].transfer(link[0], RESOURCE_ENERGY);
-        	            } else {
-
-        	                miners[i].drop(RESOURCE_ENERGY);
-        	            }
+        	        if (link.length > 0) {
+    	                var j = creep.transfer(link[0], RESOURCE_ENERGY);
+    	            } else {
+                        
+    	                creep.drop(RESOURCE_ENERGY);
+    	            }
                 }
-                var target = Game.getObjectById(miners[i].memory.currSource);
-                //then harvest sources
-                var harvest_outcome = miners[i].harvest(target);
-                if (harvest_outcome == ERR_NOT_IN_RANGE) {
-                    miners[i].moveTo(target);
-                } else if(harvest_outcome == OK){
-	                if(creep.pos.lookFor(LOOK_STRUCTURES).length == 0){
-	                    creep.room.createConstructionSite(creep.pos,STRUCTURE_CONTAINER)
-	                }                    
-                }
-
-	        }
+            }
+            
         }
+    }, 
+    // If a miner is in a remote location it should build a container under its feet!
+    remote:function(creep){
+        creep.drop(RESOURCE_ENERGY,25);
+        var look = creep.room.lookAt(creep);
+        look.forEach(function(lookObject) {
+            if(lookObject.type == LOOK_CONSTRUCTION_SITES) {
+                creep.build(lookObject.constructionSite);
+                creep.say('building')
+                
+            }
+            else if(lookObject.type == LOOK_STRUCTURES){
+                x = creep.repair(lookObject.structure);
+                creep.say('fixing')
+            }
+        });
         
-        //use free miners for cross-room allocation?
-        for (b=0; b<freeMiners.length; b++) {
-            try{
-                Game.getObjectById(freeMiners[b].id).memory.currSource = sources[0].id;
-            }
-            catch(TypeError){
-                console.log('ERR: Miner in room without any sources');
-                console.log(freeMiners[b].name)
-            }
-        }
-
+        
+        //look.forEach(function(lookObject) {
+        //    console.log(lookObject.type)})
+        
+        creep.room.createConstructionSite(creep.pos,STRUCTURE_CONTAINER);
+        
     }
+
 };
 
 module.exports = roleMiner;

@@ -69,7 +69,7 @@ var roleMiner = {
 
                     let X = sources[a].pos.x;
                     let Y = sources[a].pos.y;
-                    var sourceMinerCap = 8;// _.filter(miners[i].room.lookForAtArea(LOOK_TERRAIN, Y-1, X-1, Y+1, X+1, true), p => p.terrain == 'normal' || p.terrain == 'swamp').length;
+                    var sourceMinerCap = 1;// _.filter(miners[i].room.lookForAtArea(LOOK_TERRAIN, Y-1, X-1, Y+1, X+1, true), p => p.terrain == 'normal' || p.terrain == 'swamp').length;
                     
                     var minersOnSource = 0;
                     

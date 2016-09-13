@@ -42,6 +42,7 @@ var roleDistributer = {
                 // If to far away move closer
                 if (creep.transfer(drop_struct,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
                     creep.moveTo(drop_struct);
+                    creep.transfer(drop_struct,RESOURCE_ENERGY)
                 }
                 else{
                     creep.memory.gathering = false;

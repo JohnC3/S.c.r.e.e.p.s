@@ -43,6 +43,7 @@ var roleCollector = {
                     var target = creep.pos.findClosestByRange(loot);
                     if(creep.pickup(target) == ERR_NOT_IN_RANGE) {
                         creep.moveTo(target);
+                        creep.pickup(target);
                     }
                 }
                 else{
