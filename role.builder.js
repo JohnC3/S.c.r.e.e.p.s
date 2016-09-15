@@ -1,19 +1,16 @@
 var roleBuilder = {
     // Take from storeage to build instead of stupid.
     run: function(creep) {
-/*
         if(Game.flags.buildHere != undefined && creep.room != Game.flags.buildHere.room){
             creep.moveTo(Game.flags.buildHere)
         } 
         else{
-     */ 
-     
-        
-        if(creep.room.find(FIND_CONSTRUCTION_SITES).length > 0){
-            roleBuilder.build_Site(creep);
-        }
-        else{
-            roleBuilder.fix(creep);
+            if(creep.room.find(FIND_CONSTRUCTION_SITES).length > 0){
+                roleBuilder.build_Site(creep);
+            }
+            else{
+                roleBuilder.fix(creep);
+            }
         }
     },
     build_Site:function(creep){
