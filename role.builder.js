@@ -8,7 +8,7 @@ var roleBuilder = {
             if(creep.room.find(FIND_CONSTRUCTION_SITES).length > 0){
                 roleBuilder.build_Site(creep);
             }
-            else{
+            else if(creep.room.find(FIND_STRUCTURES,{filter: s => s.hits < s.hitsMax}).length > 0){
                 roleBuilder.fix(creep);
             }
         }
@@ -88,7 +88,7 @@ var roleBuilder = {
    	    
    	        var storedResource = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (resource) => 
-                    (resource.structureType == STRUCTURE_CONTAINER && resource.store[RESOURCE_ENERGY] > 500) ||
+                    (resource.structureType == STRUCTURE_CONTAINER && resource.store[RESOURCE_ENERGY] > 0) ||
                     (resource.structureType == STRUCTURE_STORAGE && resource.store[RESOURCE_ENERGY] > 5000)
                 });	        
 

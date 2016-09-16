@@ -2,7 +2,6 @@ var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
 var roleMiner = require('role.remoteMiner');
-//var roleMiner = require('role.miner');
 var roleDistributer = require('role.distributer');
 var roleLinker = require('role.linker');
 var roleTrooper = require('role.trooper');
@@ -29,11 +28,14 @@ module.exports.loop = function () {
         Memory.N = 1;
     }
     
+    Memory.population = {}
+    
 
     for(var i in Memory.creeps) {
         if(!Game.creeps[i]) {
             delete Memory.creeps[i];
         }
+
         
     }
     
@@ -43,17 +45,24 @@ module.exports.loop = function () {
     // Loop that lists a creep name and role for every creep.
     for(var name in Game.creeps) {
         
+            
+            
         
         
         var creep = Game.creeps[name];
         
+        if(creep.memory.trace){
+            //creep.room.createConstructionSite(creep.pos,STRUCTURE_ROAD);
+        }
+        
         if (creep.memory.role == 'miner'){
             Memory.miners.push(creep);
-       }
-            
-        //if (creep.memory.role != 'miner'){
-            creep_type[creep.memory.role].run(creep);
-        //}
+        }
+        if(Memory.population[creep.memory.role] == null || Memory.population[creep.memory.role] == undefined){
+            Memory.population[creep.memory.role] = 0
+        }
+        Memory.population[creep.memory.role] += 1;
+        creep_type[creep.memory.role].run(creep);
 
     }
     
@@ -67,10 +76,11 @@ module.exports.loop = function () {
         } 
     }
 
-    spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2);
-    spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,3);
-    spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2);  
-
+    spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2,1,1);
+    spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,2,1,1);
+    spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2,1,1);
+    //spawnControl.remote_source_mine("E27N51",Game.spawns.Spawn2,0,2,0);  
+    //spawnControl.remote_source_mine("E26N51",Game.spawns.Spawn3,1,1,0);  
     for(s in Game.spawns){
 
         spawnControl.run(s);
@@ -82,9 +92,12 @@ module.exports.loop = function () {
         var r_storage = r.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_STORAGE})[0];
         
         var sources = r.find(FIND_SOURCES);
+        
+        if(r_storage != undefined){
 
         var linkTo = r_storage.pos.findInRange(FIND_MY_STRUCTURES, 2, 
             {filter: {structureType: STRUCTURE_LINK}})[0];
+        
         
         for(var i in sources){
             
@@ -94,11 +107,11 @@ module.exports.loop = function () {
                 linkFrom.transferEnergy(linkTo);
             }
         }
-        
-        
-        if (_.filter(Game.creeps, (c)=>c.memory.role == 'claimer' && c.memory.station == 'E27N51').length < 1){
-            var name = Game.spawns.Spawn1.createCreep([MOVE,MOVE,CLAIM,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':'E27N51'});
         }
+        
+        //if (_.filter(Game.creeps, (c)=>c.memory.role == 'claimer' && c.memory.station == 'E27N51').length < 2){
+        //    var name = Game.spawns.Spawn2.createCreep([MOVE,MOVE,CLAIM,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':'E27N51'});
+        //}
         
         // Run the tower code
         tower.run(r);

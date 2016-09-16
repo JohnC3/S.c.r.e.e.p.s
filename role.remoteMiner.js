@@ -26,7 +26,7 @@ var roleMiner = {
             
             // Check if you are mining in a core base or mining remotely.
             if(creep.memory.remote == undefined){
-                if(creep.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_SPAWN}).length > 0){
+                if(creep.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_LINK}).length > 1){
                     creep.memory.remote = false;
                 }else{
                     creep.memory.remote = true;
@@ -89,7 +89,7 @@ var roleMiner = {
             }
             else if(lookObject.type == LOOK_STRUCTURES){
                 x = creep.repair(lookObject.structure);
-                creep.say('fixing')
+                creep.say('fixing '+x)
             }
         });
         

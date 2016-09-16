@@ -2,6 +2,7 @@ var roleDistributer = {
     
     // The distributer takes energy from the storage and moves it to the tower spawn and extensions in that order!
     run: function(creep){
+        try{
         if(creep.memory.assigned_storage == undefined){
             creep.memory.assigned_storage = creep.room.find(FIND_STRUCTURES, {filter: s => s.structureType == STRUCTURE_STORAGE})[0].id;
             creep.memory.gathering = true;
@@ -57,7 +58,9 @@ var roleDistributer = {
         }
                 
         
-                
+        }catch(TypeError){
+            
+        }           
 }
 }
         

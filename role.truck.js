@@ -32,7 +32,7 @@ var roleTruck = {
                 creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
             }
             else{
-                if(creep.carry.energy > creep.carryCapacity){
+                if(creep.carry.energy == creep.carryCapacity){
                     creep.memory.gathering = false;
                 }
                 
@@ -41,6 +41,8 @@ var roleTruck = {
                 var containersWithEnergy = creep.room.find(FIND_STRUCTURES, {filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0});
                 // Choose the fullest.
                 var constructions = _.sortBy(containersWithEnergy,function(c) {return [c.store[RESOURCE_ENERGY]];})
+                
+                
 
                 if(creep.memory.collect_dropped) {
                     var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES);
@@ -50,12 +52,22 @@ var roleTruck = {
                              creep.moveTo(dropped_e[0]);
                              creep.pickup(dropped_e[0]);
                         }
-                    }
+                    
+                    } else if (containersWithEnergy.length > 0 ){
+                        if(creep.withdraw(constructions[0],RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+                            creep.moveTo(constructions[0]);
+                        }
                 }
-
+                    
+                }
+                
                 else if (containersWithEnergy.length > 0 ){
+                    //creep.say(constructions[0].id)
                     if(creep.withdraw(constructions[0],RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
                         creep.moveTo(constructions[0]);
+                        if(creep.memory.trace){
+                            creep.room.createConstructionSite(creep.pos,STRUCTURE_ROAD);
+                        }
                     }
                 }
             }

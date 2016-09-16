@@ -4,7 +4,9 @@ var claimer = {
     run: function(creep) {
         // todo:: Add a if else wrapper to this that blocks pickup attempts if a unsafe flag appears.
         
-
+        if(creep.room.name == 'E27N51'){
+            creep.claimController(creep.room.controller)
+        }
         
         if(creep.room.name == creep.memory.station){
             
