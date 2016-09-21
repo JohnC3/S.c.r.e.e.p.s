@@ -86,10 +86,14 @@ var roleBuilder = {
     },
    	getEnergy:function(creep){
    	    
+   	    
+   	    
    	        var storedResource = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (resource) => 
                     (resource.structureType == STRUCTURE_CONTAINER && resource.store[RESOURCE_ENERGY] > 0) ||
+                    (resource.structureType == STRUCTURE_LINK && resource.energy > 0) ||
                     (resource.structureType == STRUCTURE_STORAGE && resource.store[RESOURCE_ENERGY] > 5000)
+                    
                 });	        
 
 	        if (storedResource){
