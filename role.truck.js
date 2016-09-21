@@ -31,45 +31,62 @@ var roleTruck = {
             if(creep.memory.station != creep.room.name){
                 creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
             }
+            
             else{
-                if(creep.carry.energy == creep.carryCapacity){
-                    creep.memory.gathering = false;
+                
+                var target = Game.getObjectById(creep.memory.pickupPoint);
+                
+                if(target == undefined){
+                    // Look for containers
+                    var containersWithEnergy = creep.room.find(FIND_STRUCTURES, {filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0});
+                    
+                    var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES);
+                    
+                    if(dropped_e.length > 0){
+                        var target = creep.pos.findClosestByRange(containersWithEnergy.concat(dropped_e));
+                    } else{
+                        var target = creep.pos.findClosestByRange(containersWithEnergy);
+                    }
+                    
+                    if(target){
+                        creep.memory.pickupPoint = target.id;
+                    }
+                    
                 }
                 
+                var target = Game.getObjectById(creep.memory.pickupPoint);
                 
-                // Look for full containers
-                var containersWithEnergy = creep.room.find(FIND_STRUCTURES, {filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0});
-                // Choose the fullest.
-                var constructions = _.sortBy(containersWithEnergy,function(c) {return [c.store[RESOURCE_ENERGY]];})
+                if(target){
+                    // Try to pickup the energy.
+                    var outcome = creep.pickup(target);
+                    if(outcome == ERR_NOT_IN_RANGE){
+                        creep.moveTo(target);
+                    } else if (outcome == 0){
+                        creep.memory.pickupPoint = undefined;
+                    }
+                    else if(outcome == -7){
+                        // If structure 
+                        var struct_outcome = creep.withdraw(target,RESOURCE_ENERGY);
+                        if(struct_outcome == -9){
+                            creep.moveTo(target);
+                        } else if(struct_outcome == 0){
+                            creep.memory.pickupPoint = undefined;
+                        }
+                    }
+                
+                }
                 
                 
 
-                if(creep.memory.collect_dropped) {
-                    var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES);
-                    if(dropped_e.length > 0){
-                        
-                        if(creep.pickup(dropped_e[0]) == ERR_NOT_IN_RANGE){
-                             creep.moveTo(dropped_e[0]);
-                             creep.pickup(dropped_e[0]);
-                        }
-                    
-                    } else if (containersWithEnergy.length > 0 ){
-                        if(creep.withdraw(constructions[0],RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                            creep.moveTo(constructions[0]);
-                        }
-                }
-                    
-                }
                 
-                else if (containersWithEnergy.length > 0 ){
-                    //creep.say(constructions[0].id)
-                    if(creep.withdraw(constructions[0],RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                        creep.moveTo(constructions[0]);
-                        if(creep.memory.trace){
-                            creep.room.createConstructionSite(creep.pos,STRUCTURE_ROAD);
-                        }
-                    }
-                }
+
+
+            }
+            
+            // If full goto dropoff mode.
+            if(creep.carry.energy == creep.carryCapacity){
+                creep.memory.gathering = false;
+                creep.memory.pickupPoint = undefined;
             }
         }
         // If you are not picking up energy drop it off.
@@ -83,9 +100,12 @@ var roleTruck = {
                 var drop_points = creep.room.find(FIND_STRUCTURES, { filter: (s) => {
                     return ([STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_TOWER].indexOf(s.structureType) != -1 && (s).energyCapacity > (s).energy)}});
 
-                var ST = creep.room.find(FIND_STRUCTURES, { filter: (s) => ((s).structureType == STRUCTURE_STORAGE || (s).structureType == STRUCTURE_LINK) && (s.energy < s.energyCapacity)});
+                var ST = creep.room.find(FIND_STRUCTURES, { filter: s => (s.structureType == STRUCTURE_STORAGE ||  (s.structureType == STRUCTURE_LINK) && s.energy < s.energyCapacity)});
+                console.log('test'+ST.length)
                 if (ST.length > 0){
                     var closest_dropoff = creep.pos.findClosestByRange(ST)
+                    creep.say('hi')
+                    
                     if (creep.transfer(closest_dropoff,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
                         creep.moveTo(closest_dropoff);
                     }
