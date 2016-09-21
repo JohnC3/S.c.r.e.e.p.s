@@ -68,19 +68,39 @@ module.exports.loop = function () {
     
     
     for( var r in Game.rooms){
-
-        //roleMiner.run(r,300);
+        
+        var hostiles = {};
+        
         var enemy_creeps = Game.rooms[r].find(FIND_HOSTILE_CREEPS);
         if(enemy_creeps.length > 0){
-            Game.flags.knights.setPosition( new RoomPosition(27,9, r))
+            /*
+            for(var i = 0; i < enemy_creeps.length;i++){
+                var enemy = enemy_creeps[i];
+                try{
+                    Memory.attacks[enemy.owner].push([enemy.owner,Game.time,enemy.room.name])
+                }catch(TypeError){
+                    Memory.attacks[enemy.owner] = new Array();
+                }
+                
+            }
+            */
+            try{
+                Game.flags.knights.setPosition( new RoomPosition(27,9, r))
+            }
+            catch(TypeError){
+                //Game.flags.createFlag()
+            }
         } 
     }
 
-    spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,2,1,1);
+    // Set up remote mining operations.
+    spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,1,1,1);
     spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,2,1,1);
-    spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,2,1,1);
+    spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,1,1,1);
     //spawnControl.remote_source_mine("E27N51",Game.spawns.Spawn2,0,2,0);  
-    //spawnControl.remote_source_mine("E26N51",Game.spawns.Spawn3,1,1,0);  
+    spawnControl.remote_source_mine("E26N51",Game.spawns.Spawn3,1,1,0);
+    spawnControl.remote_source_mine("E25N51",Game.spawns.Spawn3,1,1,0);
+    
     for(s in Game.spawns){
 
         spawnControl.run(s);
@@ -98,11 +118,13 @@ module.exports.loop = function () {
         var linkTo = r_storage.pos.findInRange(FIND_MY_STRUCTURES, 2, 
             {filter: {structureType: STRUCTURE_LINK}})[0];
         
+        var otherLinks = r_storage.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_LINK && s.id != linkTo.id && s.energy > 100} );
         
-        for(var i in sources){
+        for(var i in otherLinks){
+            var linkFrom = otherLinks[i];
             
-            var linkFrom = sources[i].pos.findInRange(FIND_MY_STRUCTURES, 3, 
-                {filter: s => s.structureType == STRUCTURE_LINK && s.energy > 700})[0];
+            //var linkFrom = sources[i].pos.findInRange(FIND_MY_STRUCTURES, 3, 
+            //    {filter: s => s.structureType == STRUCTURE_LINK && s.energy > 700})[0];
             if(linkFrom != undefined){
                 linkFrom.transferEnergy(linkTo);
             }
