@@ -45,8 +45,8 @@ var roleUpgrader = {
        
                     var storedResource = creep.pos.findClosestByPath(FIND_STRUCTURES, {
                         filter: (resource) => 
-                            (resource.structureType == STRUCTURE_CONTAINER && resource.store[RESOURCE_ENERGY] > 150) ||
-                            (resource.structureType == STRUCTURE_LINK && resource.energy > 0)
+                            (resource.structureType == STRUCTURE_CONTAINER && resource.store[RESOURCE_ENERGY] > 150) //||
+                            //(resource.structureType == STRUCTURE_LINK && resource.energy > 0)
                     });	 
 
                     if (droppedResource) {
