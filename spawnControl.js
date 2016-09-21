@@ -50,11 +50,11 @@ var spawnControl = {
         var upgraders_needed_by_RCL =   {1:1,
                         2:8,
                         3:6,
-                        4:4,
+                        4:6,
                         5:3,
                         6:3,
-                        7:3,
-                        8:3,
+                        7:2,
+                        8:1,
         };        
         
         
@@ -161,7 +161,7 @@ var spawnControl = {
         
         
         if(Collectors < 1 && extractors.length > 0){
-            var name = currentSpawn.createCreep([WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE],"Collector"+Memory.N,{'role':'collector'});
+            var name = currentSpawn.createCreep(workerBody,"Collector"+Memory.N,{'role':'collector'});
         }
         
         
@@ -183,7 +183,7 @@ var spawnControl = {
 
             
         }
-        else if (Upgraders.length <  upgraders_needed_by_RCL[cur_controler.level] || (cur_controler.level == 2 && Upgraders.length < 8) ){
+        else if (Upgraders.length <  upgraders_needed_by_RCL[cur_controler.level] ){
             var name = currentSpawn.createCreep(upgraderBody,"upgrader"+Memory.N,{'role':'upgrader'});
         } 
         
@@ -244,7 +244,7 @@ var spawnControl = {
             var name = SpawnLoc.createCreep([WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],"RemoteMiner"+Memory.N,{'role':'miner','station':RoomName});
         } else if (_.filter(Game.creeps, (c)=>c.memory.role == 'truck' && c.memory.station == RoomName).length <  NumTrucks){
             var name = SpawnLoc.createCreep(transportBody,"RemoteTruck"+Memory.N,{'role':'truck','collect_dropped':true,'station':RoomName,'droplocation':SpawnLoc.room.name});
-        } else if (_.filter(Game.creeps, (c)=>c.memory.role == 'claimer' && c.memory.station == RoomName).length < numClaimers){
+        } else if (_.filter(Game.creeps, (c)=>c.memory.role == 'claimer' && c.memory.station == RoomName).length < numClaimers && Game.rooms[RoomName].controller.reservation.ticksToEnd < 1500){
             var name = SpawnLoc.createCreep([MOVE,MOVE,CLAIM,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':RoomName});
         }
     },
