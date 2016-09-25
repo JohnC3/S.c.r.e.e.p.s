@@ -2,6 +2,7 @@ var roleDistributer = {
     
     // The distributer takes energy from the storage and moves it to the tower spawn and extensions in that order!
     run: function(creep){
+        try{
         if(creep.memory.assigned_storage == undefined){
             creep.memory.assigned_storage = creep.room.find(FIND_STRUCTURES, {filter: s => s.structureType == STRUCTURE_STORAGE})[0].id;
             creep.memory.gathering = true;
@@ -25,10 +26,13 @@ var roleDistributer = {
             if(creep.carry.energy == creep.carryCapacity){
                 creep.memory.gathering = false;
             }
-            
-            if(creep.withdraw(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+            if(drop_points.length > 0){
+                if(creep.withdraw(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+                    creep.moveTo(Storage);
+                }
+            } else{
                 creep.moveTo(Storage);
-            }          
+            }
         } 
         else{
             // If such a place exists go and transfer to it.
@@ -39,6 +43,7 @@ var roleDistributer = {
                 // If to far away move closer
                 if (creep.transfer(drop_struct,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
                     creep.moveTo(drop_struct);
+                    creep.transfer(drop_struct,RESOURCE_ENERGY)
                 }
                 else{
                     creep.memory.gathering = false;
@@ -46,7 +51,6 @@ var roleDistributer = {
             }
             
             else{
-                creep.say('more for the pile')
                 if(creep.transfer(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
                     creep.moveTo(Storage);
                 }
@@ -54,7 +58,9 @@ var roleDistributer = {
         }
                 
         
-                
+        }catch(TypeError){
+            
+        }           
 }
 }
         

@@ -1,19 +1,16 @@
 var roleBuilder = {
     // Take from storeage to build instead of stupid.
     run: function(creep) {
-/*
         if(Game.flags.buildHere != undefined && creep.room != Game.flags.buildHere.room){
             creep.moveTo(Game.flags.buildHere)
         } 
         else{
-     */ 
-     
-        
-        if(creep.room.find(FIND_CONSTRUCTION_SITES).length > 0){
-            roleBuilder.build_Site(creep);
-        }
-        else{
-            roleBuilder.fix(creep);
+            if(creep.room.find(FIND_CONSTRUCTION_SITES).length > 0){
+                roleBuilder.build_Site(creep);
+            }
+            else if(creep.room.find(FIND_STRUCTURES,{filter: s => s.hits < s.hitsMax}).length > 0){
+                roleBuilder.fix(creep);
+            }
         }
     },
     build_Site:function(creep){
@@ -89,10 +86,14 @@ var roleBuilder = {
     },
    	getEnergy:function(creep){
    	    
-   	        var storedResource = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+   	    
+            var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES);
+            var storedResource = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (resource) => 
-                    (resource.structureType == STRUCTURE_CONTAINER && resource.store[RESOURCE_ENERGY] > 500) ||
+                    (resource.structureType == STRUCTURE_CONTAINER && resource.store[RESOURCE_ENERGY] > 0) ||
+                    (resource.structureType == STRUCTURE_LINK && resource.energy > 0) ||
                     (resource.structureType == STRUCTURE_STORAGE && resource.store[RESOURCE_ENERGY] > 5000)
+                    
                 });	        
 
 	        if (storedResource){
@@ -101,7 +102,7 @@ var roleBuilder = {
 	                
 	            }
 	        } else {
-	            var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES);
+	            
 	            if (dropped_e.length > 0){
 	                
 	                if(creep.pickup(dropped_e[0]) == ERR_NOT_IN_RANGE){
