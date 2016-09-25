@@ -40,7 +40,7 @@ var roleTruck = {
                     // Look for containers
                     var containersWithEnergy = creep.room.find(FIND_STRUCTURES, {filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0});
                     
-                    var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES);
+                    var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES,{filter: d => d.pos.isEqualTo(Game.flags['Idle']) != true});
                     
                     if(dropped_e.length > 0){
                         var target = creep.pos.findClosestByRange(containersWithEnergy.concat(dropped_e));
@@ -101,7 +101,7 @@ var roleTruck = {
                     return ([STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_TOWER].indexOf(s.structureType) != -1 && (s).energyCapacity > (s).energy)}});
 
                 var ST = creep.room.find(FIND_STRUCTURES, { filter: s => (s.structureType == STRUCTURE_STORAGE ||  (s.structureType == STRUCTURE_LINK) && s.energy < s.energyCapacity)});
-                //console.log('test'+ST.length)
+                //If 
                 if (ST.length > 0){
                     var closest_dropoff = creep.pos.findClosestByRange(ST)
                     //creep.say('hi')
@@ -129,7 +129,13 @@ var roleTruck = {
 
                 // If you have nothing to do AT all! Export to the homeland
                 else{
-                    creep.moveTo(Game.flags[creep.room.name+'Idle'])
+                    if(creep.pos.inRangeTo(Game.flags['Idle'].pos,0)){
+                        creep.drop(RESOURCE_ENERGY);
+                        creep.memory.gathering = true;
+                        creep.move(LEFT)
+                    } else{
+                        creep.moveTo(Game.flags['Idle'])
+                    }
                     
                 }
             }
