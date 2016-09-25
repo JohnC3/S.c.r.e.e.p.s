@@ -45,26 +45,23 @@ module.exports.loop = function () {
     // Track the population of creeps.
     Memory.population = {}
     
-    // Tracks population by current room.
-    Memory.population_by_room = {}
+    // Fill dictionary with values.
+    
+    var all_existing_roles = Object.keys(creep_type);
+    
+    for (var i in all_existing_roles){
+        
+        var r = all_existing_roles[i];
+        Memory.population[r] = {'total':0,'station':{'W52S33':0},'room':{'W52S33':0}};
+        
+    }
+    
     // Loop that lists a creep name and role for every creep.
     for(var name in Game.creeps) {
         var creep = Game.creeps[name];
-        
-        // If a creep is set to trace create a road at its location every tick.
-        if(creep.memory.trace){
-            creep.room.createConstructionSite(creep.pos,STRUCTURE_ROAD);
-        }
-        
-        
-        if (creep.memory.role == 'miner'){
-            Memory.miners.push(creep);
-        }
-        
         // Manage population numbers
         if(Memory.population[creep.memory.role] == null || Memory.population[creep.memory.role] == undefined){
             Memory.population[creep.memory.role] = {'total':0,'station':{},'room':{}}
-            Memory.population_by_room[creep.memory.role] = {}
         }
         Memory.population[creep.memory.role]['total'] += 1;
         
@@ -76,37 +73,43 @@ module.exports.loop = function () {
             }
             Memory.population[creep.memory.role]['station'][creep.memory.station] += 1;
         }
-        
+        // What room is it currently in?
         if(Memory.population[creep.memory.role]['room'][creep.room.name] == null || Memory.population[creep.memory.role]['room'][creep.room.name]  == undefined ){
             Memory.population[creep.memory.role]['room'][creep.room.name] = 0;
         }
         Memory.population[creep.memory.role]['room'][creep.room.name] += 1;
+ 
+ 
+ 
+        // If a creep is set to trace create a road at its location every tick.
+        if(creep.memory.trace){
+            creep.room.createConstructionSite(creep.pos,STRUCTURE_ROAD);
+        }
         
-        // What room is it currently in?
+        
+        if (creep.memory.role == 'miner'){
+            Memory.miners.push(creep);
+        }
         
         
         creep_type[creep.memory.role].run(creep);
 
     }
-    
-    
+
     for( var r in Game.rooms){
         
-        var hostiles = {};
+        current_room = Game.rooms[r]
         
-        var enemy_creeps = Game.rooms[r].find(FIND_HOSTILE_CREEPS);
+        var enemy_creeps = current_room.find(FIND_HOSTILE_CREEPS);
         if(enemy_creeps.length > 0){
-            /*
-            for(var i = 0; i < enemy_creeps.length;i++){
-                var enemy = enemy_creeps[i];
-                try{
-                    Memory.attacks[enemy.owner].push([enemy.owner,Game.time,enemy.room.name])
-                }catch(TypeError){
-                    Memory.attacks[enemy.owner] = new Array();
-                }
-                
+            
+            //Temporary safe mode activation code
+            
+            if (current_room.name == 'W52S33'){
+                current_room.controller.activateSafeMode();
             }
-            */
+            
+            
             try{
                 Game.flags.knights.setPosition( new RoomPosition(27,9, r))
             }
@@ -117,14 +120,9 @@ module.exports.loop = function () {
     }
 
     // Set up remote mining operations.
-    spawnControl.remote_source_mine("E28N52",Game.spawns.Spawn1,1,1,1);
-    spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,2,1,1);
-    spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,1,1,1);
-    //spawnControl.remote_source_mine("E27N51",Game.spawns.Spawn2,0,2,0);  
-    spawnControl.remote_source_mine("E26N51",Game.spawns.Spawn3,1,1,1);
-    spawnControl.remote_source_mine("E25N51",Game.spawns.Spawn3,1,1,1);
-    //spawnControl.remote_source_mine("E27N52",Game.spawns.Spawn3,2,2,1);
-    
+    spawnControl.remote_source_mine("W53S33",Game.spawns.Spawn1,2,2,1);
+    spawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,1,1,1);
+
     for(s in Game.spawns){
 
         spawnControl.run(s);
