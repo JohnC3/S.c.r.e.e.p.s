@@ -101,10 +101,10 @@ var roleTruck = {
                     return ([STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_TOWER].indexOf(s.structureType) != -1 && (s).energyCapacity > (s).energy)}});
 
                 var ST = creep.room.find(FIND_STRUCTURES, { filter: s => (s.structureType == STRUCTURE_STORAGE ||  (s.structureType == STRUCTURE_LINK) && s.energy < s.energyCapacity)});
-                console.log('test'+ST.length)
+                //console.log('test'+ST.length)
                 if (ST.length > 0){
                     var closest_dropoff = creep.pos.findClosestByRange(ST)
-                    creep.say('hi')
+                    //creep.say('hi')
                     
                     if (creep.transfer(closest_dropoff,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
                         creep.moveTo(closest_dropoff);

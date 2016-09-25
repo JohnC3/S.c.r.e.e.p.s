@@ -28,7 +28,7 @@ module.exports.loop = function () {
         Memory.N = 1;
     }
     
-    Memory.population = {}
+    
     
 
     for(var i in Memory.creeps) {
@@ -42,26 +42,49 @@ module.exports.loop = function () {
     Memory.miners = new Array();
     Memory.occupied_sources = new Array();
     
+    // Track the population of creeps.
+    Memory.population = {}
+    
+    // Tracks population by current room.
+    Memory.population_by_room = {}
     // Loop that lists a creep name and role for every creep.
     for(var name in Game.creeps) {
-        
-            
-            
-        
-        
         var creep = Game.creeps[name];
         
+        // If a creep is set to trace create a road at its location every tick.
         if(creep.memory.trace){
-            //creep.room.createConstructionSite(creep.pos,STRUCTURE_ROAD);
+            creep.room.createConstructionSite(creep.pos,STRUCTURE_ROAD);
         }
+        
         
         if (creep.memory.role == 'miner'){
             Memory.miners.push(creep);
         }
+        
+        // Manage population numbers
         if(Memory.population[creep.memory.role] == null || Memory.population[creep.memory.role] == undefined){
-            Memory.population[creep.memory.role] = 0
+            Memory.population[creep.memory.role] = {'total':0,'station':{},'room':{}}
+            Memory.population_by_room[creep.memory.role] = {}
         }
-        Memory.population[creep.memory.role] += 1;
+        Memory.population[creep.memory.role]['total'] += 1;
+        
+        // What room is it stationed in? If it has a add that station to the dictionary then add the creep station add it to said station.
+        if (creep.memory.station != undefined){
+            
+            if(Memory.population[creep.memory.role]['station'][creep.memory.station] == null || Memory.population[creep.memory.role]['station'][creep.memory.station]  == undefined ){
+                Memory.population[creep.memory.role]['station'][creep.memory.station] = 0;
+            }
+            Memory.population[creep.memory.role]['station'][creep.memory.station] += 1;
+        }
+        
+        if(Memory.population[creep.memory.role]['room'][creep.room.name] == null || Memory.population[creep.memory.role]['room'][creep.room.name]  == undefined ){
+            Memory.population[creep.memory.role]['room'][creep.room.name] = 0;
+        }
+        Memory.population[creep.memory.role]['room'][creep.room.name] += 1;
+        
+        // What room is it currently in?
+        
+        
         creep_type[creep.memory.role].run(creep);
 
     }
@@ -98,8 +121,9 @@ module.exports.loop = function () {
     spawnControl.remote_source_mine("E28N53",Game.spawns.Spawn1,2,1,1);
     spawnControl.remote_source_mine("E28N51",Game.spawns.Spawn2,1,1,1);
     //spawnControl.remote_source_mine("E27N51",Game.spawns.Spawn2,0,2,0);  
-    spawnControl.remote_source_mine("E26N51",Game.spawns.Spawn3,1,1,0);
-    spawnControl.remote_source_mine("E25N51",Game.spawns.Spawn3,1,1,0);
+    spawnControl.remote_source_mine("E26N51",Game.spawns.Spawn3,1,1,1);
+    spawnControl.remote_source_mine("E25N51",Game.spawns.Spawn3,1,1,1);
+    //spawnControl.remote_source_mine("E27N52",Game.spawns.Spawn3,2,2,1);
     
     for(s in Game.spawns){
 
