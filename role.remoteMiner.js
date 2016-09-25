@@ -20,10 +20,13 @@ var roleMiner = {
             
             
             
-        } 
-        // Move to a unoccupied source!
+        }
+        // Move to a source with less then the required number of miners!
+        
         else if(creep.room.name == creep.memory.station){
-            
+            var Work_parts = _.filter(creep.body,p => p.type == WORK).length;
+            var required_miners = Math.ceil(5/Work_parts);
+            //creep.say(Work_parts)
             // Check if you are mining in a core base or mining remotely.
             if(creep.memory.remote == undefined){
                 if(creep.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_LINK}).length > 1){
@@ -33,6 +36,8 @@ var roleMiner = {
                 }
             }
             
+            
+            
             // Choose source.
             var sources = creep.room.find(FIND_SOURCES);
             
@@ -40,11 +45,33 @@ var roleMiner = {
                 
                 var CS = sources[i].id;
                 
+                // How many open spots are their to mine from?
+                
+                if(Memory.adjacentPositions == undefined){
+                    Memory.adjacentPositions = {};
+                }
+                
+                if(Memory.adjacentPositions[CS] == undefined){
+                    
+                    var X = sources[i].pos.x;
+                    var Y = sources[i].pos.y;
+                    
+                    var surrArea = sources[i].room.lookForAtArea(LOOK_TERRAIN, Y - 1, X - 1, Y + 1, X + 1, true);
+                    
+                    var allPositions = _.reject(surrArea, {'terrain': 'wall'}).length;
+                    
+                    Memory.adjacentPositions[CS] = allPositions;
+                    
+                }
+                else{
+                    var allPositions = Memory.adjacentPositions[CS];
+                }
+                
                 var current_miners = _.filter(Game.creeps,c => c.memory.role == 'miner' && c.memory.currSource == CS);
                 
-                if (current_miners.length == 0){
+                if (current_miners.length < Math.min(required_miners,allPositions)){
                     creep.memory.currSource = CS;
-                } 
+                }
             }
 
             var target = Game.getObjectById(creep.memory.currSource);
