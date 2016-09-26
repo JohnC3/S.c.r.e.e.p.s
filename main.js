@@ -120,7 +120,7 @@ module.exports.loop = function () {
     }
 
     // Set up remote mining operations.
-    // spawnControl.remote_source_mine("W53S33",Game.spawns.Spawn1,2,2,1);
+    spawnControl.remote_source_mine("W53S33",Game.spawns.Spawn1,2,2,1);
     spawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,1,1,1);
 
     for(s in Game.spawns){

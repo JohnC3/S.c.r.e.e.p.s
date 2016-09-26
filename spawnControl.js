@@ -134,12 +134,12 @@ var spawnControl = {
         
         
         
-        else if (Raider < 4){
+        else if (Raider < 0){
             var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],"Raider"+Memory.N,{'role':'raider','rally_flag':'troops','AttackStruct':true});
         
         }
         if (Troops < 4){
-            var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
+            var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
         } 
         /*
         if(Game.flags.wartime != undefined){
