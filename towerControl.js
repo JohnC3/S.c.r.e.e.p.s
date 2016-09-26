@@ -13,7 +13,7 @@ var towerControl = {
                 var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
                 if(closestHostile) {
                     tower.attack(closestHostile);
-                }else if(tower.energy > 1000){
+                }else if(tower.energy > 750){
                     var rampart = tower.pos.findClosestByRange(FIND_STRUCTURES, {
                         filter: (structure) => 
                         (structure).hits < 1000 && 
@@ -23,9 +23,11 @@ var towerControl = {
                        tower.repair(rampart);
                     } 
                     else{
+                        // Don't waste energy on walls containers or ramparts
                         var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
                             filter: (structure) => (structure).hits < (structure).hitsMax && 
-                            (structure).structureType != STRUCTURE_WALL && 
+                            (structure).structureType != STRUCTURE_WALL &&
+                            (structure).structureType != STRUCTURE_CONTAINER && 
                             (structure).structureType != STRUCTURE_RAMPART
                             });
                         if(closestDamagedStructure) {

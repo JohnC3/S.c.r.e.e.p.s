@@ -4,6 +4,7 @@ var roleMiner = {
 
     run: function(creep) {
         
+        
         //var miners = _.filter(Game.creeps, function (c) { return c.room.name == room && c.memory.role == 'miner'});
         
         if(creep.room.name != creep.memory.station){
@@ -24,6 +25,7 @@ var roleMiner = {
         // Move to a source with less then the required number of miners!
         
         else if(creep.room.name == creep.memory.station){
+            
             var Work_parts = _.filter(creep.body,p => p.type == WORK).length;
             var required_miners = Math.ceil(5/Work_parts);
             //creep.say(Work_parts)
@@ -73,9 +75,12 @@ var roleMiner = {
                     creep.memory.currSource = CS;
                 }
             }
-
+            
             var target = Game.getObjectById(creep.memory.currSource);
+            creep.say(target)
+            creep.say(creep.harvest(target))
             if (creep.harvest(target) == ERR_NOT_IN_RANGE) {
+                
                 creep.moveTo(target);
             }
             

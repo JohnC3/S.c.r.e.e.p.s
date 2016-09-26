@@ -111,7 +111,7 @@ module.exports.loop = function () {
             
             
             try{
-                Game.flags.troops.setPosition( new RoomPosition(27,9, r))
+                Game.flags.troops.setPosition( new RoomPosition(25,25, r))
             }
             catch(TypeError){
                 //Game.flags.createFlag()
@@ -120,8 +120,9 @@ module.exports.loop = function () {
     }
 
     // Set up remote mining operations.
-    spawnControl.remote_source_mine("W53S33",Game.spawns.Spawn1,2,2,1);
-    spawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,1,1,1);
+    spawnControl.remote_source_mine("W53S32",Game.spawns.Spawn1,1,1,1);
+    spawnControl.remote_source_mine("W53S33",Game.spawns.Spawn1,0,1,1);
+    spawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,1,1,0);
 
     for(s in Game.spawns){
 

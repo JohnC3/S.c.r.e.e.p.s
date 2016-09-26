@@ -51,7 +51,7 @@ var spawnControl = {
         // number of upgraders
         var upgraders_needed_by_RCL =   {1:4,
                         2:10,
-                        3:4,
+                        3:6,
                         4:6,
                         5:3,
                         6:3,
@@ -138,7 +138,7 @@ var spawnControl = {
             var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],"Raider"+Memory.N,{'role':'raider','rally_flag':'troops','AttackStruct':true});
         
         }
-        if (Troops < 4){
+        if (Troops < 0){
             var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
         } 
         /*
@@ -264,14 +264,11 @@ var spawnControl = {
         var work_parts_in_miner = _.filter(miner_body,p => p == WORK).length;
         
         // Create miners until their are at least 5 WORK parts per source.
-        var miners = Memory.population['miner']['station'][RoomName] || 0;
-        
+        var Miners = Memory.population['miner']['station'][RoomName] || 0;
+
         var transports = Memory.population['truck']['station'][RoomName] || 0;
         
-        
-
-        if(miners*work_parts_in_miner < numMiners*5){
-            console.log(miners+' '+numMiners*5+' '+miner_body)
+        if(Miners*work_parts_in_miner < numMiners*5){
             var name = SpawnLoc.createCreep(miner_body,'RemoteMiner'+Memory.N,{'role':'miner','station':RoomName});
             //var name = SpawnLoc.createCreep([WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],"RemoteMiner"+Memory.N,{'role':'miner','station':RoomName});
         } else if (transports <  NumTrucks){
