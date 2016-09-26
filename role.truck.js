@@ -27,54 +27,10 @@ var roleTruck = {
         
         //If you are currently gathering go get resources
         if(creep.memory.gathering){
-            // If you are not in your station go to your station!
-            if(creep.memory.station != creep.room.name){
-                creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
-            }
             
-            else{
-                
-                var target = Game.getObjectById(creep.memory.pickupPoint);
-                
-                if(target == undefined){
-                    // Look for containers
-                    var containersWithEnergy = creep.room.find(FIND_STRUCTURES, {filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0});
-                    
-                    var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES,{filter: d => d.pos.isEqualTo(Game.flags['Idle']) != true});
-                    
-                    if(dropped_e.length > 0){
-                        var target = creep.pos.findClosestByRange(containersWithEnergy.concat(dropped_e));
-                    } else{
-                        var target = creep.pos.findClosestByRange(containersWithEnergy);
-                    }
-                    
-                    if(target){
-                        creep.memory.pickupPoint = target.id;
-                    }
-                    
-                }
-                
-                var target = Game.getObjectById(creep.memory.pickupPoint);
-                
-                if(target){
-                    // Try to pickup the energy.
-                    var outcome = creep.pickup(target);
-                    if(outcome == ERR_NOT_IN_RANGE){
-                        creep.moveTo(target);
-                    } else if (outcome == 0){
-                        creep.memory.pickupPoint = undefined;
-                    }
-                    else if(outcome == -7){
-                        // If structure 
-                        var struct_outcome = creep.withdraw(target,RESOURCE_ENERGY);
-                        if(struct_outcome == -9){
-                            creep.moveTo(target);
-                        } else if(struct_outcome == 0){
-                            creep.memory.pickupPoint = undefined;
-                        }
-                    }
-                }
-            }
+            roleTruck.get_energy(creep);
+            // If you are not in your station go to your station!
+
             
             // If full goto dropoff mode.
             if(creep.carry.energy == creep.carryCapacity){
@@ -153,6 +109,55 @@ var roleTruck = {
             
         }
         
+    },
+    get_energy:function(creep){
+        if(creep.memory.station != creep.room.name){
+            creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
+        }
+        
+        else{
+            
+            var target = Game.getObjectById(creep.memory.pickupPoint);
+            
+            if(target == undefined){
+                // Look for containers
+                var containersWithEnergy = creep.room.find(FIND_STRUCTURES, {filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0});
+                
+                var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES,{filter: d => d.pos.isEqualTo(Game.flags['Idle']) != true});
+                
+                if(dropped_e.length > 0){
+                    var target = creep.pos.findClosestByRange(containersWithEnergy.concat(dropped_e));
+                } else{
+                    var target = creep.pos.findClosestByRange(containersWithEnergy);
+                }
+                
+                if(target){
+                    creep.memory.pickupPoint = target.id;
+                }
+                
+            }
+            
+            var target = Game.getObjectById(creep.memory.pickupPoint);
+            
+            if(target){
+                // Try to pickup the energy.
+                var outcome = creep.pickup(target);
+                if(outcome == ERR_NOT_IN_RANGE){
+                    creep.moveTo(target);
+                } else if (outcome == 0){
+                    creep.memory.pickupPoint = undefined;
+                }
+                else if(outcome == -7){
+                    // If structure 
+                    var struct_outcome = creep.withdraw(target,RESOURCE_ENERGY);
+                    if(struct_outcome == -9){
+                        creep.moveTo(target);
+                    } else if(struct_outcome == 0){
+                        creep.memory.pickupPoint = undefined;
+                    }
+                }
+            }
+        }
     }
 }
         

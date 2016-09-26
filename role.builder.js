@@ -1,3 +1,5 @@
+var roleTruck = require('role.truck')
+
 var roleBuilder = {
     // Take from storeage to build instead of stupid.
     run: function(creep) {
@@ -102,13 +104,15 @@ var roleBuilder = {
 	                
 	            }
 	        } else {
+	            roleTruck.get_energy(creep)
 	            
-	            if (dropped_e.length > 0){
-	                
-	                if(creep.pickup(dropped_e[0]) == ERR_NOT_IN_RANGE){
-	                    creep.moveTo(dropped_e[0]);
+	            
+	            /*if (dropped_e.length > 0){
+	            var energy_pickup = creep.pos.findClosestByRange(dropped_e)
+	                if(creep.pickup(energy_pickup) == ERR_NOT_IN_RANGE){
+	                    creep.moveTo(energy_pickup);
 	                }
-	            }
+	            }*/
 	        }
    	}
 };
