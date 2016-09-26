@@ -95,7 +95,7 @@ module.exports.loop = function () {
         creep_type[creep.memory.role].run(creep);
 
     }
-
+    
     for( var r in Game.rooms){
         
         current_room = Game.rooms[r]
@@ -111,7 +111,7 @@ module.exports.loop = function () {
             
             
             try{
-                Game.flags.knights.setPosition( new RoomPosition(27,9, r))
+                Game.flags.troops.setPosition( new RoomPosition(27,9, r))
             }
             catch(TypeError){
                 //Game.flags.createFlag()
@@ -120,7 +120,7 @@ module.exports.loop = function () {
     }
 
     // Set up remote mining operations.
-    spawnControl.remote_source_mine("W53S33",Game.spawns.Spawn1,2,2,1);
+    // spawnControl.remote_source_mine("W53S33",Game.spawns.Spawn1,2,2,1);
     spawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,1,1,1);
 
     for(s in Game.spawns){

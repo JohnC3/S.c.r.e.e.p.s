@@ -29,7 +29,7 @@ var spawnControl = {
         };
         
         var upgrader_body_by_RCL =   {1:[WORK,WORK,CARRY,MOVE],
-                        2:[WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE],
+                        2:[WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE],
                         3:[WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE],
                         4:[WORK,WORK,WORK,CARRY,MOVE,MOVE],
                         5:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
@@ -50,8 +50,8 @@ var spawnControl = {
         
         // number of upgraders
         var upgraders_needed_by_RCL =   {1:4,
-                        2:4,
-                        3:6,
+                        2:10,
+                        3:4,
                         4:6,
                         5:3,
                         6:3,
@@ -115,25 +115,32 @@ var spawnControl = {
         
 
         if (Game.spawns[spawn].room.controller.ticksToDowngrade <4900 && currentSpawn.canCreateCreep(upgraderBody) != OK){
-            currentSpawn.createCreep([WORK,CARRY,MOVE],"Eupgrader"+Memory.N,{'role':'upgrader','emergency':true});
+            var name = currentSpawn.createCreep([WORK,CARRY,MOVE],"Eupgrader"+Memory.N,{'role':'upgrader','emergency':true});
             console.log('Emergency spawning upgrader' + cur_room.name)
         }
         
         if (Miners > 0 && Trucks == 0 && num_links < num_sources + 1){
-            currentSpawn.createCreep([CARRY,CARRY,MOVE,MOVE],"ETruck"+Memory.N,{'role':'truck','collect_dropped':true,'emergency':true});
+            var name = currentSpawn.createCreep([CARRY,CARRY,MOVE,MOVE],"ETruck"+Memory.N,{'role':'truck','collect_dropped':true,'emergency':true});
             console.log('Emergency spawning truck' + cur_room.name)
         }
         if (Distributer == 0 && currentSpawn.canCreateCreep(transportBody) != OK && num_storage == 1){
-            currentSpawn.createCreep([CARRY,MOVE],"Edistributer"+Memory.N,{'role':'distributer','emergency':true});
+            var name = currentSpawn.createCreep([CARRY,MOVE],"Edistributer"+Memory.N,{'role':'distributer','emergency':true});
             console.log('Emergency spawning distributer ' + cur_room.name)
         }
-        if (Miners == 0 && currentSpawn.canCreateCreep(workerBody) != OK && Harvesters < num_sources){
-            currentSpawn.createCreep([WORK,MOVE,CARRY],"Eharvester"+Memory.N,{'role':'harvester','emergency':true});
+        if (Miners == 0 &&  Harvesters < 4){ // currentSpawn.canCreateCreep(workerBody) != OK &&
+            var name = currentSpawn.createCreep([WORK,MOVE,CARRY],"Eharvester"+Memory.N,{'role':'harvester','emergency':true});
             console.log('Emergency spawning harvester ' + cur_room.name)
         }
         
         
         
+        else if (Raider < 4){
+            var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],"Raider"+Memory.N,{'role':'raider','rally_flag':'troops','AttackStruct':true});
+        
+        }
+        if (Troops < 4){
+            var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
+        } 
         /*
         if(Game.flags.wartime != undefined){
             if (Troops < 5){
@@ -196,19 +203,25 @@ var spawnControl = {
         } 
         
         // Miner body
+        var miner_body = spawnControl.largest_miner(currentSpawn)
+        
+        /*
         var miner_body = new Array(MOVE,CARRY);
 
         
-        var work_parts_in_miner = _.filter(miner_body,p => p == WORK).length;
         
-        while(work_parts_in_miner*100 + 200 < room_development){
+        
+        while(work_parts_in_miner*100 + 500 < room_development){
             miner_body.push(WORK);
             work_parts_in_miner += 1;
-        }
+        }*/
         
-        
+        // How many work parts do the miners in the room currently have?
+        var work_parts_in_miner = _.filter(miner_body,p => p == WORK).length;
+        //console.log(''+(Miners*work_parts_in_miner)+(num_sources*5))
         // Create miners until their are at least 5 WORK parts per source.
         if(Miners*work_parts_in_miner < num_sources*5){
+            console.log(Miners*work_parts_in_miner < num_sources*5 && currentSpawn.canCreateCreep(miner_body))
             console.log('miners needed '+miner_body+ ' '+currentSpawn.canCreateCreep(miner_body)+' '+Miners*work_parts_in_miner+' '+num_sources*5)
             console.log('energy needed' +spawnControl.bodyCost(miner_body))
             var name = currentSpawn.createCreep(miner_body,"Miner"+Memory.N,{'role':'miner','station':cur_room.name});
@@ -238,6 +251,8 @@ var spawnControl = {
     },
     remote_source_mine:function(RoomName,SpawnLoc,NumTrucks,numMiners,numClaimers){
         
+        //console.log('x')
+        
         // Energy available for spawning 
         var room_development = SpawnLoc.room.energyCapacityAvailable;
         
@@ -252,9 +267,11 @@ var spawnControl = {
         var miners = Memory.population['miner']['station'][RoomName] || 0;
         
         var transports = Memory.population['truck']['station'][RoomName] || 0;
+        
+        
 
         if(miners*work_parts_in_miner < numMiners*5){
-            console.log('x')
+            console.log(miners+' '+numMiners*5+' '+miner_body)
             var name = SpawnLoc.createCreep(miner_body,'RemoteMiner'+Memory.N,{'role':'miner','station':RoomName});
             //var name = SpawnLoc.createCreep([WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],"RemoteMiner"+Memory.N,{'role':'miner','station':RoomName});
         } else if (transports <  NumTrucks){
@@ -280,13 +297,13 @@ var spawnControl = {
         
         var room_development = SpawnLoc.room.energyCapacityAvailable;
         
-        var transport_body = new Array();
+        var transport_body = new Array(CARRY,MOVE);
         
         var flip = true;
         
         var cost_of_transport = spawnControl.bodyCost(transport_body);
         
-        while(cost_of_transport < room_development){
+        while(cost_of_transport < room_development -50){
             if(flip){
                 transport_body.push(CARRY);
                 cost_of_transport += 50;
@@ -297,6 +314,11 @@ var spawnControl = {
                 flip = true;
             }
         }
+        // If the number of MOVE parts is not equal to the number of carry parts fix it.
+        if(_.filter(transport_body,p => p == MOVE).length != _.filter(transport_body,p => p == CARRY).length){
+            transport_body.pop()
+        }
+        //console.log(transport_body)
         return transport_body
     },
     // Build the largest miner the room can.
@@ -310,10 +332,13 @@ var spawnControl = {
         
         var flip = true;
         
-        while(cost_of_miner < room_development){
+        var work_parts = 0;
+        
+        while(cost_of_miner < room_development -100 && work_parts < 5){
             if(flip){
                 miner_body.push(WORK);
                 cost_of_miner += 100;
+                work_parts += 1;
                 flip = false;
             } else{
                 miner_body.push(MOVE);

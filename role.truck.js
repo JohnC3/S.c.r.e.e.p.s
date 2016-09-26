@@ -73,14 +73,7 @@ var roleTruck = {
                             creep.memory.pickupPoint = undefined;
                         }
                     }
-                
                 }
-                
-                
-
-                
-
-
             }
             
             // If full goto dropoff mode.
@@ -99,6 +92,9 @@ var roleTruck = {
                 
                 var drop_points = creep.room.find(FIND_STRUCTURES, { filter: (s) => {
                     return ([STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_TOWER].indexOf(s.structureType) != -1 && (s).energyCapacity > (s).energy)}});
+                    
+                var containers = creep.room.find(FIND_STRUCTURES, { filter: (s) => {
+                    return ([STRUCTURE_CONTAINER].indexOf(s.structureType) != -1 && s.energyCapacity > s.store[RESOURCE_ENERGY])}});
 
                 var ST = creep.room.find(FIND_STRUCTURES, { filter: s => (s.structureType == STRUCTURE_STORAGE ||  (s.structureType == STRUCTURE_LINK) && s.energy < s.energyCapacity)});
                 //If 
@@ -119,6 +115,21 @@ var roleTruck = {
                     var attempted_transfer = creep.transfer(drop_struct,RESOURCE_ENERGY);
                     // If to far away move closer
                     if (attempted_transfer == ERR_NOT_IN_RANGE){
+                        creep.moveTo(drop_struct);
+                    }
+                    // If the harvester is now empty it should pickup more energy
+                    else if(creep.carry.energy == 0){
+                        creep.memory.gathering = true;
+                    }
+                }
+                // If such a place exists go and transfer to it.
+                else if (containers.length > 0){
+                    
+                    var drop_struct = creep.pos.findClosestByPath(containers);
+                    // Attempt to transfer to the container
+                    var attempted_transfer = creep.transfer(drop_struct,RESOURCE_ENERGY);
+                    // If to far away move closer
+                    if (drop_struct == ERR_NOT_IN_RANGE){
                         creep.moveTo(drop_struct);
                     }
                     // If the harvester is now empty it should pickup more energy
