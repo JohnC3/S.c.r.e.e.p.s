@@ -101,7 +101,7 @@ var roleTruck = {
                         creep.memory.gathering = true;
                         creep.move(LEFT)
                     } else{
-                        creep.moveTo(Game.flags['Idle'])
+                        creep.moveTo(Game.flags[creep.memory.droplocation+'Idle'])
                     }
                     
                 }

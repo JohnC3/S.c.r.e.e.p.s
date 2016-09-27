@@ -3,8 +3,12 @@ var roleTruck = require('role.truck')
 var roleBuilder = {
     // Take from storeage to build instead of stupid.
     run: function(creep) {
-        if(Game.flags.buildHere != undefined && creep.room != Game.flags.buildHere.room){
-            creep.moveTo(Game.flags.buildHere)
+        if(creep.memory.station == undefined){
+            creep.memory.station = creep.room.name;
+        }
+        
+        if(creep.room.name != creep.memory.station){
+            creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
         } 
         else{
             if(creep.room.find(FIND_CONSTRUCTION_SITES).length > 0){

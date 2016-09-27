@@ -1,7 +1,24 @@
 var spawnControl = {
     
-    
     run:function(spawn){
+        
+        var currentSpawn = Game.spawns[spawn];
+
+        var cur_room = currentSpawn.room;
+        
+        //if(){
+        spawnControl.economic(spawn)
+        //}
+        //else{
+            // Spawn defender
+        //}
+        
+        
+    },
+    
+    
+    
+    economic:function(spawn){
 
         var currentSpawn = Game.spawns[spawn];
 
@@ -78,7 +95,7 @@ var spawnControl = {
             
         }
 
-        var Harvesters = Memory.population['harvester']['room'][currentSpawn.room.name] || 0;
+        var Harvesters = Memory.population['harvester']['station'][currentSpawn.room.name] || 0;
 
         
         var Builders = Memory.population['builder']['room'][currentSpawn.room.name] || 0;
@@ -138,46 +155,10 @@ var spawnControl = {
             var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],"Raider"+Memory.N,{'role':'raider','rally_flag':'troops','AttackStruct':true});
         
         }
-        if (Troops < 0){
+        if (Troops < 2){
             var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
         } 
-        /*
-        if(Game.flags.wartime != undefined){
-            if (Troops < 5){
-                var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
-    
-            } 
-            if (Archers < 8){
-                var name = currentSpawn.createCreep([MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK],"Archer"+Memory.N,{'role':'archer','rally_flag':'archers'});
-    
-            } else if (Knights < 4){
-                var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],"Knight"+Memory.N,{'role':'knight','rally_flag':'knights'});
-                //var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK],"Knight"+Memory.N,{'role':'knight','rally_flag':'knights'});
-    
-            } else if (Healer < 1){
-                var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,HEAL,HEAL,HEAL,HEAL],"Healer"+Memory.N,{'role':'healer','rally_flag':'knights'});
-            
-            if (Deconstructors < 3){
-            var name = Game.spawns.Spawn1.createCreep([WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],"DemoManr"+Memory.N,{'role':'deconstructor'});
-                }
-            
-            }
-        }
-        else{
-            
-            if (Knights < 0){
-                var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],"Knight"+Memory.N,{'role':'knight','rally_flag':'knights'});
-            } 
-            
-            else if (Healer < 0){
-                var name = currentSpawn.createCreep([HEAL,HEAL,MOVE,MOVE],"Healer"+Memory.N,{'role':'healer','rally_flag':'knights'});
-            } 
-            //else if (Deconstructors.length < 1){
-            //var name = currentSpawn.createCreep([WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],"DemoManr"+Memory.N,{'role':'deconstructor'});
-            //    }
-            
-        }
-        */
+
         var extractors = cur_room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_EXTRACTOR});
         
         
@@ -186,6 +167,11 @@ var spawnControl = {
         }
         
         var construction_sites = cur_room.find(FIND_CONSTRUCTION_SITES)
+        
+        
+        //if (Memory.population['builder']['station']['W53S33'] < 4){ // || r_storage.store[RESOURCE_ENERGY] > 70000)){
+        //    var name = currentSpawn.createCreep(workerBody,"builder"+Memory.N,{'role':'builder','station':'W53S33'});
+        //}
         
         // Builders!
         if (Builders < num_sources && (construction_sites.length > 0)){ // || r_storage.store[RESOURCE_ENERGY] > 70000)){
@@ -204,26 +190,14 @@ var spawnControl = {
         
         // Miner body
         var miner_body = spawnControl.largest_miner(currentSpawn)
-        
-        /*
-        var miner_body = new Array(MOVE,CARRY);
-
-        
-        
-        
-        while(work_parts_in_miner*100 + 500 < room_development){
-            miner_body.push(WORK);
-            work_parts_in_miner += 1;
-        }*/
-        
         // How many work parts do the miners in the room currently have?
         var work_parts_in_miner = _.filter(miner_body,p => p == WORK).length;
         //console.log(''+(Miners*work_parts_in_miner)+(num_sources*5))
         // Create miners until their are at least 5 WORK parts per source.
         if(Miners*work_parts_in_miner < num_sources*5){
-            console.log(Miners*work_parts_in_miner < num_sources*5 && currentSpawn.canCreateCreep(miner_body))
-            console.log('miners needed '+miner_body+ ' '+currentSpawn.canCreateCreep(miner_body)+' '+Miners*work_parts_in_miner+' '+num_sources*5)
-            console.log('energy needed' +spawnControl.bodyCost(miner_body))
+            //console.log(Miners*work_parts_in_miner < num_sources*5 && currentSpawn.canCreateCreep(miner_body))
+            //console.log('miners needed '+miner_body+ ' '+currentSpawn.canCreateCreep(miner_body)+' '+Miners*work_parts_in_miner+' '+num_sources*5)
+            //console.log('energy needed' +spawnControl.bodyCost(miner_body))
             var name = currentSpawn.createCreep(miner_body,"Miner"+Memory.N,{'role':'miner','station':cur_room.name});
         } 
         
@@ -249,9 +223,7 @@ var spawnControl = {
         }
 
     },
-    remote_source_mine:function(RoomName,SpawnLoc,NumTrucks,numMiners,numClaimers){
-        
-        //console.log('x')
+    remote_source_mine:function(RoomName,SpawnLoc,NumTrucks,numMiners,numClaimers,claim = false){
         
         // Energy available for spawning 
         var room_development = SpawnLoc.room.energyCapacityAvailable;
@@ -275,9 +247,9 @@ var spawnControl = {
             var name = SpawnLoc.createCreep(transport_body,"RTruck"+Memory.N,{'role':'truck','station':RoomName,'droplocation':SpawnLoc.room.name});
         } else if (_.filter(Game.creeps, (c)=>c.memory.role == 'claimer' && c.memory.station == RoomName).length < numClaimers){ // && Game.rooms[RoomName].controller.reservation.ticksToEnd < 1500
             try{
-                var name = SpawnLoc.createCreep([MOVE,MOVE,CLAIM,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':RoomName});
+                var name = SpawnLoc.createCreep([MOVE,MOVE,CLAIM,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':RoomName,'claimmode':claim});
                 if (name == ERR_NOT_ENOUGH_ENERGY){
-                    var name = SpawnLoc.createCreep([MOVE,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':RoomName});
+                    var name = SpawnLoc.createCreep([MOVE,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':RoomName,'claimmode':claim});
                 }
             }catch(TypeError){
                 console.log('claimer error')

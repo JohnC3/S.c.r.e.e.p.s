@@ -111,7 +111,7 @@ var roleMiner = {
     }, 
     // If a miner is in a remote location it should build a container under its feet!
     remote:function(creep){
-        creep.drop(RESOURCE_ENERGY,25);
+        creep.drop(RESOURCE_ENERGY,45);
         var look = creep.room.lookAt(creep);
         look.forEach(function(lookObject) {
             if(lookObject.type == LOOK_CONSTRUCTION_SITES) {
