@@ -83,8 +83,73 @@ var bodyBuilder = {
         }
         return miner_body
     },
-    // Largest upgrader
-    largest_upgrader:function(SpawnLoc){
+    
+    // Largest upgrader, if roads is false then it needs a move part per each other part
+    largest_upgrader:function(SpawnLoc,roads = true){
+        
+        var cur_room = SpawnLoc.room;
+        
+        var room_development = cur_room.energyCapacityAvailable;
+        
+        var upgrader_body = new Array(CARRY,MOVE);
+        
+        var cost_of_upgrader = ecoAI.bodyCost(upgrader_body);
+        
+        if(roads){
+            var Fatigue = -1;
+        } else{
+            var Fatigue = 0;
+        }
+        
+        var work_parts = 0;
+        
+        
+        while(cost_of_upgrader < room_development - 100){
+            
+            if(Fatigue > 0){
+                upgrader_body.push(MOVE);
+                cost_of_upgrader += 50;
+                Fatigue = Fatigue -2;
+            }
+            else{
+                // Every 4th work part add a carry part instead of a work part
+                if (work_parts == 4){
+                    work_parts = 0;
+                    upgrader_body.push(CARRY);
+                
+                    cost_of_upgrader += 50;
+                    if(roads){
+                        Fatigue += 1;
+                    } else{
+                        Fatigue += 2;
+                    }
+                }
+                else{
+                    upgrader_body.push(WORK);
+                    
+                    cost_of_upgrader += 100;
+                    if(roads){
+                        Fatigue += 1;
+                    } else{
+                        Fatigue += 2;
+                    }
+                    work_parts += 1;
+                }
+            }
+        }
+        console.log(upgrader_body.sort())
+        console.log('cost '+ecoAI.bodyCost(upgrader_body))
+        console.log('capacity '+room_development)
+        if(ecoAI.bodyCost(upgrader_body) <= room_development){
+            
+            return upgrader_body.sort();
+        }
+        
+        
+    },
+    
+    /* Largest upgrader
+    largest_upgrader_old:function(SpawnLoc){
         
         var cur_room = SpawnLoc.room;
         
@@ -110,8 +175,10 @@ var bodyBuilder = {
         }
         
         return upgraderBody
-    },
-    // Largest upgrader
+    },*/
+    
+    
+    // Largest worker
     largest_worker:function(SpawnLoc){
         
         var cur_room = SpawnLoc.room;
