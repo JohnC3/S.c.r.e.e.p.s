@@ -105,8 +105,6 @@ var bodyBuilder = {
         
         var upgraderBody = upgrader_body_by_RCL[cur_controler.level];
         
-        
-        
         if(ecoAI.bodyCost(upgraderBody) > room_development){
             var upgraderBody = upgrader_body_by_RCL[cur_controler.level -1];
         }
@@ -140,11 +138,6 @@ var bodyBuilder = {
         
         return workerBody
     }
-    
-    
-    
-    
-    
 }
 
 

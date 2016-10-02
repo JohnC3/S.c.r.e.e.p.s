@@ -29,8 +29,10 @@ module.exports.loop = function () {
         Memory.N = 1;
     }
     
-    if (Memory.T> 100 || Memory.N == undefined){
-        Memory.N = 1;
+    if (Memory.T> 50 || Memory.N == undefined){
+        Memory.T = 1;
+    } else{
+        Memory.T += 1;
     }
     
     

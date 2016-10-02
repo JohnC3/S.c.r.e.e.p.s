@@ -13,11 +13,32 @@ var spawnControl = {
         
         var enemy_creeps = cur_room.find(FIND_HOSTILE_CREEPS);
 
-        spawnControl.economic(spawn)
+        spawnControl.economic(spawn);
+        
+        if(enemy_creeps.length > 0){
+            spawnControl.military(spawn);
+        }
 
         
         
     },
+    
+    military:function(spawn){
+        
+        var currentSpawn = Game.spawns[spawn];
+
+        var cur_room = currentSpawn.room;
+        
+        var militia_size = Memory.population['trooper']['station'] || 0;
+        
+        if (militia_size < 1){
+            var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],"Militia"+Memory.N,{'role':'trooper','rally_flag':currentSpawn.name+'militia'});
+        } 
+        
+        
+    },
+    
+    
     economic:function(spawn){
 
         var currentSpawn = Game.spawns[spawn];
@@ -33,57 +54,36 @@ var spawnControl = {
         var num_links = currentSpawn.room.find(FIND_STRUCTURES, {filter : s => s.structureType == STRUCTURE_LINK} ).length;
         
         var num_storage = cur_room.find(FIND_STRUCTURES,{filter: s => s.structureType == STRUCTURE_STORAGE }).length;
-        // The worker body changes based on energy capacity availalbe
 
-                                var worker_body_by_RCL =   {1:[WORK,WORK,CARRY,MOVE],
-                                                2:[WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], // The end of teir 2
-                                                3:[WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],//Max energy for RCL 3
-                                                4:[WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                5:[WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                6:[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                7:[WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                8:[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
-                                };
-                                
-                                var upgrader_body_by_RCL =   {1:[WORK,WORK,CARRY,MOVE],
-                                                2:[WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE],
-                                                
-                                                3:[WORK,WORK,WORK,MOVE,MOVE,CARRY,MOVE,MOVE,MOVE],
-                                                4:[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                5:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                6:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                7:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                8:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                };
-                        
-                                
-                                var upgrader_body_by_RCL =   {1:[WORK,WORK,CARRY,MOVE],
-                                                2:[WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE],
-                                                
-                                                3:[WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE],
-                                                4:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                5:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                6:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                7:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                                8:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                                };
+        var SpawnLoc = currentSpawn;
         
-                                
-                        
+        // This is likely to throw type errors.
+        try{
+            var miner_body = Memory.creepBody[SpawnLoc.room.name]['miner'];
+            
+            var transportBody = Memory.creepBody[SpawnLoc.room.name]['transport'];
+            
+            var upgraderBody = Memory.creepBody[SpawnLoc.room.name]['upgrader'];
+            
+            var workerBody = Memory.creepBody[SpawnLoc.room.name]['worker'];
+        }catch(TypeError){
+            bodyBuilder.run(currentSpawn);
+            
+            var miner_body = Memory.creepBody[SpawnLoc.room.name]['miner'];
+            
+            var transportBody = Memory.creepBody[SpawnLoc.room.name]['transport'];
+            
+            var upgraderBody = Memory.creepBody[SpawnLoc.room.name]['upgrader'];
+            
+            var workerBody = Memory.creepBody[SpawnLoc.room.name]['worker'];
+        }
+
         
+        // If any of the bodies are undfined or 50 ticks have passed assign a body to each type.
+        if(miner_body == undefined || miner_body == undefined || miner_body == undefined || miner_body == undefined || Memory.T == 1){
+            bodyBuilder.run(currentSpawn);
+        }
         
-        
-                                var workerBody = worker_body_by_RCL[cur_controler.level];
-                                
-                                //console.log(ecoAI.bodyCost(workerBody));
-                        
-                                var upgraderBody = upgrader_body_by_RCL[cur_controler.level];
-                                
-                                if(ecoAI.bodyCost(workerBody) > room_development || ecoAI.bodyCost(upgraderBody) > room_development){
-                                    var workerBody = worker_body_by_RCL[cur_controler.level -1] || [WORK,WORK,CARRY,MOVE];
-                                    
-                                    var upgraderBody = upgrader_body_by_RCL[cur_controler.level -1];
-                                }
         // number of upgraders
         try{
             var upgraders_needed = Memory.Upgraders_needed[cur_room];
@@ -93,18 +93,11 @@ var spawnControl = {
         }
         if(upgraders_needed == undefined || Memory.T == 1){
             
-            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(cur_room.name,upgraderBody,budget = 1800);
+            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 1500);
             
             upgraders_needed = Memory.Upgraders_needed[cur_room];
         }
-        
-        
-        var transportBody = bodyBuilder.largest_transport(currentSpawn);
 
-        var miner_body = bodyBuilder.largest_miner(currentSpawn)
-        //.log(workerBody[0])
-        //console.log('workerBody '+ecoAI.moveSpeed([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK]))
-        
         
         var Harvesters = Memory.population['harvester']['room'][currentSpawn.room.name] || 0;
 
@@ -128,29 +121,12 @@ var spawnControl = {
 
         var Troops = Memory.population['trooper']['total'] || 0; 
         
-        var Archers = Memory.population['archer']['total'] || 0;
-
-        var Knights = Memory.population['knight']['total'] || 0;
-
         var Raider = Memory.population['raider']['total'] || 0;
 
         var Healer = Memory.population['healer']['total'] || 0;
         
-        var Claimer = Memory.population['claimer']['total'] || 0;
         
-        //if (Memory.N % 10 == 1){
-        //    console.log(''+cur_room.name+"\nh " + Harvesters +" bld " + Builders +" up " + Upgraders +"\nmine " + Miners +" trk " + Trucks +"\nsol " + Troops +" kni " + Knights +" raid " + Raider );
-        //}
-        
-        
-        
-        /*if(cur_room.name == 'W52S33'){
-            var builders = Memory.population['builder']['station']['W52S34'] || 0;
-            if(builders < 2){
-                var name = currentSpawn.createCreep(workerBody,"builder"+Memory.N,{'role':'builder','station':'W52S34'});
-            }
-        }*/
-        
+        // Emergency spawn code begins
 
         if (Game.spawns[spawn].room.controller.ticksToDowngrade <4900 && currentSpawn.canCreateCreep(upgraderBody) != OK && Upgraders < 1){
             var name = currentSpawn.createCreep([WORK,CARRY,MOVE],"Eupgrader"+Memory.N,{'role':'upgrader','emergency':true});
@@ -170,6 +146,7 @@ var spawnControl = {
             console.log('Emergency spawning harvester ' + currentSpawn.name)
         }
         
+        // Emergency spawn code ends
         
         
         if (Raider < 0){
@@ -189,7 +166,7 @@ var spawnControl = {
         
         var construction_sites = cur_room.find(FIND_CONSTRUCTION_SITES)
 
-        if (Builders < num_sources && (construction_sites.length > 0)){ // || r_storage.store[RESOURCE_ENERGY] > 70000)){
+        if (Builders < num_sources && (construction_sites.length > 0)){
             var name = currentSpawn.createCreep(workerBody,"builder"+Memory.N,{'role':'builder'});
         } else if (Upgraders <  upgraders_needed){
             var name = currentSpawn.createCreep(upgraderBody,"upgrader"+Memory.N,{'role':'upgrader'});
@@ -197,7 +174,7 @@ var spawnControl = {
         
         // Only build trucks if there are no links! 
         if(num_links < num_sources + 1){
-            if (_.filter(Game.creeps, (c)=>c.memory.role == 'truck' && c.memory.station == cur_room.name).length < num_sources){ //Math.floor(2 * num_sources)){
+            if (Trucks < num_sources){ 
                 var name = currentSpawn.createCreep(transportBody,"Truck"+Memory.N,{'role':'truck','station':cur_room.name,'droplocation':cur_room.name});
             } 
         } 
@@ -236,7 +213,7 @@ var spawnControl = {
     },
     
     
-    
+    // Send miners trucks and claimers to a given room to mine it and return resorces to the base that spawned them.
     remote_source_mine:function(RoomName,SpawnLoc,NumTrucks,numMiners,numClaimers,claim = false){
         
         // Energy available for spawning 
@@ -277,7 +254,37 @@ var spawnControl = {
                 console.log(""+RoomName+" "+name);
                 Memory.N = Memory.N +1;
         }
+    },
+    
+    // Dispatch builders to another room, along with trucks to dropoff energy in said room.
+    dispatch_builders:function(RoomName,SpawnLoc,NumTrucks,numBuilders){
+        
+        var cur_room = SpawnLoc.room;
+        
+        var builders = Memory.population['builder']['station'][RoomName] || 0;
+        
+        var workerBody = bodyBuilder.largest_worker(SpawnLoc)
+        
+        if(builders < numBuilders){
+            var name = currentSpawn.createCreep(workerBody,"builder"+Memory.N,{'role':'builder','station':RoomName});
+        }
+        
+        var trucks = _.filter(Game.creeps, (c)=>c.memory.role == 'truck' && c.memory.station == cur_room.name && c.memory.droplocation == RoomName).length || 0;
+        
+        var transport_body = bodyBuilder.largest_transport(SpawnLoc)
+        
+        if(trucks < NumTrucks){
+            var name = currentSpawn.createCreep(transport_body,"Hauler"+Memory.N,{'role':'builder','station':cur_room.name,'droplocation':RoomName});
+        }
+        
+        if (name != -4 && name != -6 && name != undefined){
+                console.log(""+RoomName+" "+name);
+                Memory.N = Memory.N +1;
+        }
+        
     }
+
+    
 }
 
 module.exports = spawnControl;

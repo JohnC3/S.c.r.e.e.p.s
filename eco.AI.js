@@ -24,14 +24,14 @@ var ecoAI = {
         
     },
     // Compute optimal number of upgraders.
-    optimalUpgraders:function(roomName,upgrader_body, budget = 2000 , income_per_300 = 3000){
+    optimalUpgraders:function(SpawnLoc,upgrader_body, budget = 2000 , income_per_300 = 3000){
         
-        console.log(roomName)
+        roomName = SpawnLoc.room.name;
+        
+        console.log(SpawnLoc.name)
         // By default creeps live for only 1500 ticks        
         var life_span = 1500;
-        
-        console.log('life_span '+life_span)
-        
+
         var body_cost = ecoAI.bodyCost(upgrader_body);
         
         console.log('body_cost '+body_cost)
@@ -77,11 +77,11 @@ var ecoAI = {
         console.log('total_energy_in_budget '+total_energy_in_budget)
         
         // How many are needed to do the work?
-        var harvesters_needed = total_energy_in_budget/total_energy_cost
+        var harvesters_needed = Math.round(total_energy_in_budget/total_energy_cost)
         
         console.log('harvesters_needed '+harvesters_needed)
         
-        if(harvesters_needed < 1){
+        if(harvesters_needed == 0){
             harvesters_needed = 1;
         }
         
@@ -90,7 +90,7 @@ var ecoAI = {
         
         console.log('energy_efficency '+energy_efficency)
         
-        return Math.round(harvesters_needed)
+        return harvesters_needed
     },
     
     
