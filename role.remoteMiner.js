@@ -77,8 +77,8 @@ var roleMiner = {
             }
             
             var target = Game.getObjectById(creep.memory.currSource);
-            creep.say(target)
-            creep.say(creep.harvest(target))
+            //creep.say(target)
+            //creep.say(creep.harvest(target))
             if (creep.harvest(target) == ERR_NOT_IN_RANGE) {
                 
                 creep.moveTo(target);

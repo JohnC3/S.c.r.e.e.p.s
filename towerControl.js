@@ -13,7 +13,7 @@ var towerControl = {
                 var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
                 if(closestHostile) {
                     tower.attack(closestHostile);
-                }else if(tower.energy > 750){
+                }else if(tower.energy > 555){
                     var rampart = tower.pos.findClosestByRange(FIND_STRUCTURES, {
                         filter: (structure) => 
                         (structure).hits < 1000 && 

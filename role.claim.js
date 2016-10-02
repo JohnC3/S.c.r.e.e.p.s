@@ -17,7 +17,7 @@ var claimer = {
             }else{
                 var attempt = creep.reserveController(creep.room.controller)
             }
-            if(attempt == ERR_NOT_IN_RANGE) {
+            if(attempt != OK) {
 
                 var moveAttempt = creep.moveTo(creep.room.controller);
                 
