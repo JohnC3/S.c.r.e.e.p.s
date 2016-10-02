@@ -96,12 +96,17 @@ var roleTruck = {
 
                 // If you have nothing to do AT all! Export to the homeland
                 else{
-                    if(creep.pos.inRangeTo(Game.flags['Idle'].pos,0)){
+                    var idle_flag = Game.flags[creep.memory.droplocation+'Idle'];
+                    if(idle_flag == undefined){
+                        var idle_flag = Game.flags['Idle']
+                        console.log('you mispelled the idle flag in room ' +creep.memory.droplocation)
+                    }
+                    if(creep.pos.inRangeTo(idle_flag.pos,0)){
                         creep.drop(RESOURCE_ENERGY);
                         creep.memory.gathering = true;
                         creep.move(LEFT)
                     } else{
-                        creep.moveTo(Game.flags[creep.memory.droplocation+'Idle'])
+                        creep.moveTo(idle_flag)
                     }
                     
                 }
@@ -123,7 +128,7 @@ var roleTruck = {
                 // Look for containers
                 var containersWithEnergy = creep.room.find(FIND_STRUCTURES, {filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0});
                 
-                var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES,{filter: d => d.pos.isEqualTo(Game.flags['Idle']) != true});
+                var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES,{filter: d => d.pos.isEqualTo(Game.flags[creep.memory.droplocation+'Idle']) != true});
                 
                 if(dropped_e.length > 0){
                     var target = creep.pos.findClosestByRange(containersWithEnergy.concat(dropped_e));
