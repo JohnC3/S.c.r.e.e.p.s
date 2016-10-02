@@ -83,33 +83,68 @@ var bodyBuilder = {
         }
         return miner_body
     },
-    // Largest upgrader
-    largest_upgrader:function(SpawnLoc){
+    // Largest upgrader, if roads is false then it needs a move part per each other part
+    largest_upgrader:function(SpawnLoc,roads = true){
         
         var cur_room = SpawnLoc.room;
         
-        var cur_controler = cur_room.controller;
-        
         var room_development = cur_room.energyCapacityAvailable;
         
-        var upgrader_body_by_RCL =   {1:[WORK,WORK,CARRY,MOVE],
-                        2:[WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE,MOVE],
-                        
-                        3:[WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE],
-                        4:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-                        5:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE],
-                        6:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                        7:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                        8:[WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-        };
+        var upgrader_body = new Array(CARRY,MOVE);
         
-        var upgraderBody = upgrader_body_by_RCL[cur_controler.level];
+        var cost_of_upgrader = ecoAI.bodyCost(upgrader_body);
         
-        if(ecoAI.bodyCost(upgraderBody) > room_development){
-            var upgraderBody = upgrader_body_by_RCL[cur_controler.level -1];
+        if(roads){
+            var Fatigue = -1;
+        } else{
+            var Fatigue = 0;
         }
         
-        return upgraderBody
+        var work_parts = 0;
+        
+        
+        while(cost_of_upgrader < room_development - 100){
+            
+            if(Fatigue > 0){
+                upgrader_body.push(MOVE);
+                cost_of_upgrader += 50;
+                Fatigue = Fatigue -2;
+            }
+            else{
+                // Every 4th work part add a carry part instead of a work part
+                if (work_parts == 4){
+                    work_parts = 0;
+                    upgrader_body.push(CARRY);
+                
+                    cost_of_upgrader += 50;
+                    if(roads){
+                        Fatigue += 1;
+                    } else{
+                        Fatigue += 2;
+                    }
+                }
+                else{
+                    upgrader_body.push(WORK);
+                    
+                    cost_of_upgrader += 100;
+                    if(roads){
+                        Fatigue += 1;
+                    } else{
+                        Fatigue += 2;
+                    }
+                    work_parts += 1;
+                }
+            }
+        }
+        console.log(upgrader_body.sort())
+        console.log('cost '+ecoAI.bodyCost(upgrader_body))
+        console.log('capacity '+room_development)
+        if(ecoAI.bodyCost(upgrader_body) <= room_development){
+            
+            return upgrader_body.sort();
+        }
+        
+        
     },
     // Largest upgrader
     largest_worker:function(SpawnLoc){

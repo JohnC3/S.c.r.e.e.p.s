@@ -115,7 +115,7 @@ var roleTruck = {
         }
         
     },
-    get_energy:function(creep){
+    get_energy:function(creep,idleFlag = true){
         if(creep.memory.station != creep.room.name){
             creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
         }
@@ -127,8 +127,12 @@ var roleTruck = {
             if(target == undefined){
                 // Look for containers
                 var containersWithEnergy = creep.room.find(FIND_STRUCTURES, {filter: (i) => i.structureType == STRUCTURE_CONTAINER && i.store[RESOURCE_ENERGY] > 0});
-                
-                var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES,{filter: d => d.pos.isEqualTo(Game.flags[creep.memory.droplocation+'Idle']) != true});
+                if(idleFlag){
+                    var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES,{filter: d => d.pos.isEqualTo(Game.flags[creep.memory.droplocation+'Idle']) != true});
+                }
+                else{
+                    var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES);
+                }
                 
                 if(dropped_e.length > 0){
                     var target = creep.pos.findClosestByRange(containersWithEnergy.concat(dropped_e));

@@ -154,9 +154,14 @@ module.exports.loop = function () {
         
         // This needs to be its own module.
         var a_spawn = Game.spawns[s];
-        if(a_spawn.name != 'Spawn2'){
-            spawnControl.run(s);
-        }
+
+        spawnControl.run(s)
+        // Test that the custom made workers are well working
+        
+        //var x = bodyBuilder.largest_upgrader(a_spawn)
+        //ecoAI.optimalUpgraders(a_spawn,x)
+        
+
         
         var r = a_spawn.room;
         var room_level = Game.spawns[s].room.controller.level;

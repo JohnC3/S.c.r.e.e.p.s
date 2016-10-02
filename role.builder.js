@@ -24,7 +24,7 @@ var roleBuilder = {
         if (constructionSite == undefined || constructionSite == null){
             //var constructions = _.groupBy(creep.room.find(FIND_CONSTRUCTION_SITES),[_.structureType]);
             var constructions = _.sortBy(creep.room.find(FIND_CONSTRUCTION_SITES),function(o) {
-  return {'tower':0,'spawn':1,'link':1,'extension':2,'storage':2,'container':4,'road':5,'wall':6,'rampart':6}[o.structureType];})
+                    return {'tower':0,'spawn':1,'link':1,'storage':2,'extension':3,'container':4,'road':5,'wall':7,'rampart':6}[o.structureType];})
             
             if(constructions.length > 0){
                 
@@ -107,7 +107,7 @@ var roleBuilder = {
 	                
 	            }
 	        } else {
-	            roleTruck.get_energy(creep)
+	            roleTruck.get_energy(creep,idleFlag = false)
 	            
 	            
 	            /*if (dropped_e.length > 0){
