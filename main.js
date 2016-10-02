@@ -1,3 +1,4 @@
+var ecoAI = require('eco.AI');
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
@@ -11,8 +12,8 @@ var roleClaim = require('role.claim');
 var roleHealer = require('role.healer');
 var roleArcher = require('role.archer');
 var roleCollector = require('role.collector');
-var roleDeconstructor = require('role.deconstructor');
 var spawnControl = require('spawnControl');
+var roleMaintance = require('role.maintance')
 var tower = require('towerControl')
 
 module.exports.loop = function () {
@@ -21,16 +22,18 @@ module.exports.loop = function () {
     // role to code used in role hash
     var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,'collector':roleCollector,
     'truck':roleTruck,'trooper':roleTrooper,'knight':roleTrooper,'raider':roleTrooper,'healer':roleHealer,
-    'archer':roleArcher,'deconstructor':roleDeconstructor,'distributer':roleDistributer,'linker':roleLinker};
+    'archer':roleArcher,'distributer':roleDistributer,'linker':roleLinker,'maintance':roleMaintance};
     
     //
     if (Memory.N > 100 || Memory.N == undefined){
         Memory.N = 1;
     }
     
+    if (Memory.T> 100 || Memory.N == undefined){
+        Memory.N = 1;
+    }
     
     
-
     for(var i in Memory.creeps) {
         if(!Game.creeps[i]) {
             delete Memory.creeps[i];
@@ -38,7 +41,6 @@ module.exports.loop = function () {
 
         
     }
-    
     Memory.miners = new Array();
     Memory.occupied_sources = new Array();
     
@@ -58,7 +60,9 @@ module.exports.loop = function () {
     
     // Loop that lists a creep name and role for every creep.
     for(var name in Game.creeps) {
+
         var creep = Game.creeps[name];
+
         // Manage population numbers
         if(Memory.population[creep.memory.role] == null || Memory.population[creep.memory.role] == undefined){
             Memory.population[creep.memory.role] = {'total':0,'station':{},'room':{}}
@@ -101,40 +105,66 @@ module.exports.loop = function () {
         current_room = Game.rooms[r]
         
         var enemy_creeps = current_room.find(FIND_HOSTILE_CREEPS);
-        if(enemy_creeps.length > 0){
-            
-            //Temporary safe mode activation code
-            
-            if (current_room.name == 'W52S33'){
-                current_room.controller.activateSafeMode();
-            }
-            
-            
-            try{
+        var claim_this_room = Game.flags['Take this room']
+        
+        // Rooms I plan to take dont get defended
+        if(claim_this_room.room == current_room){
+            // Move troops in once safe mode starts to wear off.
+            if(current_room.controller.safeMode < 500){
                 Game.flags.troops.setPosition( new RoomPosition(25,25, r))
             }
-            catch(TypeError){
-                //Game.flags.createFlag()
-            }
-        } 
+            
+        }
+        else{
+            if(enemy_creeps.length > 0 && current_room.name != 'W54S32'){
+                
+                //Temporary safe mode activation code
+                
+                if (current_room.name == 'W52S33'){
+                    current_room.controller.activateSafeMode();
+                }
+                
+                
+                try{
+                    Game.flags.troops.setPosition( new RoomPosition(25,25, r))
+                }
+                catch(TypeError){
+                    //Game.flags.createFlag()
+                }
+            }            
+        }
+ 
     }
 
     // Set up remote mining operations.
-    spawnControl.remote_source_mine("W53S32",Game.spawns.Spawn1,3,1,1);
-    spawnControl.remote_source_mine("W52S34",Game.spawns.Spawn1,0,0,1);
-    //pawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,1,2,0);
-
+    spawnControl.remote_source_mine("W53S32",Game.spawns.Spawn3,3,1,1);
+    spawnControl.remote_source_mine("W54S33",Game.spawns.Spawn3,3,1,1);
+    spawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,2,1,1);
+    
+    spawnControl.remote_source_mine("W51S34",Game.spawns.Spawn4,2,1,1);
+    spawnControl.remote_source_mine("W52S35",Game.spawns.Spawn4,2,1,1);
+    spawnControl.remote_source_mine("W53S34",Game.spawns.Spawn4,2,1,1);
+    
+    
     for(s in Game.spawns){
-
-        spawnControl.run(s);
+        
+        
         
         // This needs to be its own module.
         var a_spawn = Game.spawns[s];
+        if(a_spawn.name != 'Spawn2'){
+            spawnControl.run(s);
+        }
+        
         var r = a_spawn.room;
         var room_level = Game.spawns[s].room.controller.level;
         var r_storage = r.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_STORAGE})[0];
         
         var sources = r.find(FIND_SOURCES);
+        
+        
+        
+        
         
         if(r_storage != undefined){
 
