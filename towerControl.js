@@ -1,6 +1,8 @@
 var towerControl = {
     
-    run:function(r){
+    run:function(spawn){
+        
+        var r = Game.spawns[spawn].room;
         
         
         var towers = r.find(FIND_STRUCTURES,{filter: (structure) => (structure).structureType == STRUCTURE_TOWER});
@@ -27,7 +29,7 @@ var towerControl = {
                         var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
                             filter: (structure) => (structure).hits < (structure).hitsMax && 
                             (structure).structureType != STRUCTURE_WALL &&
-                            (structure).structureType != STRUCTURE_CONTAINER && 
+                            //(structure).structureType != STRUCTURE_CONTAINER && 
                             (structure).structureType != STRUCTURE_RAMPART
                             });
                         if(closestDamagedStructure) {

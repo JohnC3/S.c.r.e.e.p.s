@@ -92,24 +92,72 @@ var ecoAI = {
         
         return harvesters_needed
     },
-    
+    // Compute the energy cost of the miners trucks, linkers and distributers
+    harvestCost:function(SpawnLoc, numMiners = 2,numTrucks = 2,numDistributers = 1, budget = 2000 , income_per_300 = 3000){
+        console.log(SpawnLoc.name+' must alocate at least this much energy to maintain its miners trucks and distributers')
+        
+        var roomName = SpawnLoc.room.name;
+        
+        var miner_body_cost = ecoAI.bodyCost(Memory.creepBody[roomName]['miner']);
+        
+        console.log('miner_body_cost '+miner_body_cost)
+        
+        var transport_body_cost = ecoAI.bodyCost(Memory.creepBody[roomName]['transport']);
+        
+        console.log('transport_body_cost '+transport_body_cost)
+        
+        
+        // All linkers have the same body 
+        var linker_body_cost = ecoAI.bodyCost([CARRY,CARRY,CARRY,CARRY,MOVE]);
+        
+        console.log('transport_body_cost '+transport_body_cost)
+
+
+        // By default creeps live for only 1500 ticks        
+        var life_span = 1500;
+        
+        // To maintain this rate we require 
+        
+        var total_build_cost = miner_body_cost*numMiners + transport_body_cost *(numTrucks + numDistributers) + linker_body_cost;
+        
+        console.log('total_build_cost '+total_build_cost)
+
+        // Total energy harvested during this period
+        var total_energy_in_budget = income_per_300 * 5
+        console.log('total_energy_in_budget '+total_energy_in_budget)
+        
+        // What portion of the energy is budgeted towards them?
+        var budget_needed = (total_build_cost/total_energy_in_budget) * income_per_300
+        console.log(budget_needed);
+        
+        
+        return budget_needed
+    },
     
     
     // Compute the distance between the controller and the storage (or spawn if no storage is available)
     upgradeDistance:function(roomName){
         // Step one find a path
         var base = Game.rooms[roomName];
+        
+
 
         // Distance between storage and spawn and spawn and  for storage.
         
         if(base != undefined){
-        
+            
             if(base.storage){
                 var path = base.findPath(base.storage.pos,base.controller.pos,ignoreCreeps = true);
             } else{
                 var spawn = base.find(FIND_STRUCTURES,{filter: s => s.structureType == STRUCTURE_SPAWN})[0];
                 var path = base.findPath(spawn.pos,base.controller.pos)
             }
+            // If a link is being used use it instead.
+            if(base.memory.invert){
+                var link = base.controller.pos.findInRange(FIND_MY_STRUCTURES, 6,{filter: {structureType: STRUCTURE_LINK}})[0];
+                var path = base.findPath(link.pos,base.controller.pos)
+            }
+            
             
             return path.length
         }

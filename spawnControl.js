@@ -12,6 +12,8 @@ var spawnControl = {
         var cur_room = currentSpawn.room;
         
         var enemy_creeps = cur_room.find(FIND_HOSTILE_CREEPS);
+        
+        //Memory.creeps_needed[cur_room.name] = {};
 
         spawnControl.economic(spawn);
         
@@ -84,19 +86,7 @@ var spawnControl = {
             bodyBuilder.run(currentSpawn);
         }
         
-        // number of upgraders
-        try{
-            var upgraders_needed = Memory.Upgraders_needed[cur_room];
-        }catch(Error){
-            console.log('errror in upgraders needed by room')
-            Memory.Upgraders_needed = {}
-        }
-        if(upgraders_needed == undefined || Memory.T == 1){
-            
-            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 1500);
-            
-            upgraders_needed = Memory.Upgraders_needed[cur_room];
-        }
+
 
         
         var Harvesters = Memory.population['harvester']['room'][currentSpawn.room.name] || 0;
@@ -126,6 +116,30 @@ var spawnControl = {
         var Healer = Memory.population['healer']['total'] || 0;
         
         
+        // number of upgraders
+        try{
+            var upgraders_needed = Memory.Upgraders_needed[cur_room];
+        }catch(Error){
+            console.log('errror in upgraders needed by room')
+            Memory.Upgraders_needed = {}
+        }
+        
+        if(upgraders_needed == undefined || Memory.T == 1){
+            
+            var harvest_cost = ecoAI.harvestCost(SpawnLoc);
+            
+            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 3000 - harvest_cost);
+            
+            upgraders_needed = Memory.Upgraders_needed[cur_room];
+            
+            
+            
+        }
+        
+        
+        
+        
+        
         // Emergency spawn code begins
 
         if (Game.spawns[spawn].room.controller.ticksToDowngrade <4900 && currentSpawn.canCreateCreep(upgraderBody) != OK && Upgraders < 1){
@@ -140,9 +154,9 @@ var spawnControl = {
         
         var Emergency_distributers = _.filter(Game.creeps,c => c.memory.role == 'distributer' && c.room.name == cur_room.name && c.memory.emergency == true).length;
         
-        var Non_Emergency_distributers = _.filter(Game.creeps,c => c.memory.role == 'distributer' && c.room.name == cur_room.name && c.memory.emergency == false).length;
+        var Non_Emergency_distributers = _.filter(Game.creeps,c => c.memory.role == 'distributer' && c.room.name == cur_room.name && c.memory.emergency != true).length;
         
-        if (Emergency_distributers < 3 && Non_Emergency_distributers == 0 && currentSpawn.canCreateCreep(transportBody) != OK && num_storage == 1){
+        if (Emergency_distributers < 2 && Non_Emergency_distributers == 0 && currentSpawn.canCreateCreep(transportBody) != OK && num_storage == 1){
             var name = currentSpawn.createCreep([CARRY,MOVE,CARRY,MOVE],"Edistributer"+Memory.N,{'role':'distributer','emergency':true});
             console.log('Emergency spawning distributer ' + currentSpawn.name)
         }
@@ -171,8 +185,7 @@ var spawnControl = {
         
         var construction_sites = cur_room.find(FIND_CONSTRUCTION_SITES)
 
-        if (Builders < num_sources && (construction_sites.length > 0)){
-            console.log('Builders')
+        if (Builders < 2 && (construction_sites.length > 0)){
             var name = currentSpawn.createCreep(workerBody,"builder"+Memory.N,{'role':'builder'});
         } else if (Upgraders <  upgraders_needed){
             var name = currentSpawn.createCreep(upgraderBody,"upgrader"+Memory.N,{'role':'upgrader'});
@@ -180,11 +193,13 @@ var spawnControl = {
         
         // Only build trucks if there are no links! 
         if(num_links < num_sources + 1){
-            if (Trucks < num_sources){ 
-                var name = currentSpawn.createCreep(transportBody,"Truck"+Memory.N,{'role':'truck','station':cur_room.name,'droplocation':cur_room.name});
-            } 
+            var trucks_needed = num_sources;
+        } else {
+            var trucks_needed = 1;
+        }
+        if (Trucks < trucks_needed){ 
+            var name = currentSpawn.createCreep(transportBody,"Truck"+Memory.N,{'role':'truck','station':cur_room.name,'droplocation':cur_room.name});
         } 
-        
         // Miner body
         
         // How many work parts do the miners in the room currently have?

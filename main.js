@@ -6,7 +6,6 @@ var roleMiner = require('role.remoteMiner');
 var roleDistributer = require('role.distributer');
 var roleLinker = require('role.linker');
 var roleTrooper = require('role.trooper');
-var roleArcher = require('role.archer')
 var roleTruck = require('role.truck');
 var roleClaim = require('role.claim');
 var roleHealer = require('role.healer');
@@ -15,14 +14,14 @@ var roleCollector = require('role.collector');
 var spawnControl = require('spawnControl');
 var roleMaintance = require('role.maintance')
 var tower = require('towerControl')
+var linkControl = require('linkControl')
 
 module.exports.loop = function () {
 
     // If a miner is an old miner create a replacement but keep working.
     // role to code used in role hash
     var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,'collector':roleCollector,
-    'truck':roleTruck,'trooper':roleTrooper,'knight':roleTrooper,'raider':roleTrooper,'healer':roleHealer,
-    'archer':roleArcher,'distributer':roleDistributer,'linker':roleLinker,'maintance':roleMaintance};
+    'truck':roleTruck,'trooper':roleTrooper,'knight':roleTrooper,'raider':roleTrooper,'healer':roleHealer,'distributer':roleDistributer,'linker':roleLinker,'maintance':roleMaintance};
     
     //
     if (Memory.N > 100 || Memory.N == undefined){
@@ -49,7 +48,7 @@ module.exports.loop = function () {
     // Track the population of creeps.
     Memory.population = {}
     
-    // Fill dictionary with values.
+    // Fill population with keys corresponding to every role.
     
     var all_existing_roles = Object.keys(creep_type);
     
@@ -146,23 +145,29 @@ module.exports.loop = function () {
     spawnControl.remote_source_mine("W51S34",Game.spawns.Spawn4,2,1,1);
     spawnControl.remote_source_mine("W52S35",Game.spawns.Spawn4,2,1,1);
     spawnControl.remote_source_mine("W53S34",Game.spawns.Spawn4,2,1,1);
-    
+    spawnControl.remote_source_mine("W53S35",Game.spawns.Spawn4,2,1,1);
     
     for(s in Game.spawns){
         
         
         
         // This needs to be its own module.
-        var a_spawn = Game.spawns[s];
+        
 
         spawnControl.run(s)
         // Test that the custom made workers are well working
         
         //var x = bodyBuilder.largest_upgrader(a_spawn)
         //ecoAI.optimalUpgraders(a_spawn,x)
+        //ecoAI.harvestCost(a_spawn)
+
         
 
         
+        
+        linkControl.run(s)
+        /*
+        var a_spawn = Game.spawns[s];
         var r = a_spawn.room;
         var room_level = Game.spawns[s].room.controller.level;
         var r_storage = r.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_STORAGE})[0];
@@ -170,33 +175,25 @@ module.exports.loop = function () {
         var sources = r.find(FIND_SOURCES);
         
         
-        
-        
-        
         if(r_storage != undefined){
-
-        var linkTo = r_storage.pos.findInRange(FIND_MY_STRUCTURES, 2, 
-            {filter: {structureType: STRUCTURE_LINK}})[0];
-        
-        var otherLinks = r_storage.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_LINK && s.id != linkTo.id && s.energy > 100} );
-        
-        for(var i in otherLinks){
-            var linkFrom = otherLinks[i];
             
-            //var linkFrom = sources[i].pos.findInRange(FIND_MY_STRUCTURES, 3, 
-            //    {filter: s => s.structureType == STRUCTURE_LINK && s.energy > 700})[0];
-            if(linkFrom != undefined){
-                linkFrom.transferEnergy(linkTo);
+
+            var linkTo = r_storage.pos.findInRange(FIND_MY_STRUCTURES, 2, 
+                {filter: {structureType: STRUCTURE_LINK}})[0];
+                
+            var otherLinks = r_storage.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_LINK && s.id != linkTo.id && s.energy > 100} );
+            
+            for(var i in otherLinks){
+                var linkFrom = otherLinks[i];
+                
+                //var linkFrom = sources[i].pos.findInRange(FIND_MY_STRUCTURES, 3, 
+                //    {filter: s => s.structureType == STRUCTURE_LINK && s.energy > 700})[0];
+                if(linkFrom != undefined){
+                    linkFrom.transferEnergy(linkTo);
+                }
             }
-        }
-        }
-        
-        //if (_.filter(Game.creeps, (c)=>c.memory.role == 'claimer' && c.memory.station == 'E27N51').length < 2){
-        //    var name = Game.spawns.Spawn2.createCreep([MOVE,MOVE,CLAIM,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':'E27N51'});
-        //}
-        
-        // Run the tower code
-        tower.run(r);
+        }*/
+        tower.run(s);
 
     }
 }

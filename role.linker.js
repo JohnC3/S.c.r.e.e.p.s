@@ -3,6 +3,9 @@ var roleLinker = {
     // The distributer takes energy from the storage and moves it to the tower spawn and extensions in that order!
     run: function(creep){
         
+
+        
+        
         if(creep.memory.assigned_storage == undefined){
             creep.memory.assigned_storage = creep.room.find(FIND_STRUCTURES, {filter: s => s.structureType == STRUCTURE_STORAGE})[0].id;
         }
@@ -13,7 +16,21 @@ var roleLinker = {
                 {filter: s => s.structureType == STRUCTURE_LINK})[0].id;
         }
         var Link = Game.getObjectById(creep.memory.assigned_link);
-
+        
+        // If the links are set to go from storage to controller.
+        if(creep.room.memory.invert){
+            if(Link.energy < 800){
+                roleLinker.transfer(creep,Link,Storage)
+            }
+            
+        }
+        else{
+            roleLinker.transfer(creep,Storage,Link)
+            
+        }
+    },
+    // Transfer from one to the other.
+    transfer:function(creep,Storage,Link){
         if(creep.carry.energy > 0){
                 if(creep.transfer(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
                     creep.moveTo(Storage);

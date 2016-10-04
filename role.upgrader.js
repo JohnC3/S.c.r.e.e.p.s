@@ -42,7 +42,8 @@ var roleUpgrader = {
                     
                     // If the room has a storage take exclusively from that. Otherwise get it from wherever else you can find.
                     var roomStorage = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: structure => 
-                            structure.structureType == STRUCTURE_STORAGE && structure.store[RESOURCE_ENERGY] > 3000
+                            structure.structureType == STRUCTURE_STORAGE ||
+                            structure.structureType == STRUCTURE_LINK
                         });
                     if(roomStorage){
                         if(creep.withdraw(roomStorage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){

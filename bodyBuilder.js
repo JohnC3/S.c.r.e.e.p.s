@@ -81,7 +81,7 @@ var bodyBuilder = {
                 flip = true;
             }
         }
-        return miner_body
+        return miner_body.sort()
     },
     // Largest upgrader, if roads is false then it needs a move part per each other part
     largest_upgrader:function(SpawnLoc,roads = true){
@@ -135,19 +135,22 @@ var bodyBuilder = {
                     work_parts += 1;
                 }
             }
+            if(Fatigue > 0){
+                upgrader_body.push(MOVE);
+                cost_of_upgrader += 50;
+                Fatigue = Fatigue -2;
+            }
         }
         console.log(upgrader_body.sort())
         console.log('cost '+ecoAI.bodyCost(upgrader_body))
         console.log('capacity '+room_development)
-        if(ecoAI.bodyCost(upgrader_body) <= room_development){
-            
-            return upgrader_body.sort();
-        }
-        
-        
+        return upgrader_body.sort();
+
     },
     // Largest upgrader
     largest_worker:function(SpawnLoc){
+        
+        
         
         var cur_room = SpawnLoc.room;
         
@@ -171,7 +174,7 @@ var bodyBuilder = {
             var workerBody = worker_body_by_RCL[cur_controler.level -1] || [WORK,WORK,CARRY,MOVE];
         }
         
-        return workerBody
+        return workerBody.sort()
     }
 }
 
