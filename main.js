@@ -148,11 +148,6 @@ module.exports.loop = function () {
     spawnControl.remote_source_mine("W53S35",Game.spawns.Spawn4,2,1,1);
     
     for(s in Game.spawns){
-        
-        
-        
-        // This needs to be its own module.
-        
 
         spawnControl.run(s)
         // Test that the custom made workers are well working
@@ -161,38 +156,8 @@ module.exports.loop = function () {
         //ecoAI.optimalUpgraders(a_spawn,x)
         //ecoAI.harvestCost(a_spawn)
 
-        
-
-        
-        
         linkControl.run(s)
-        /*
-        var a_spawn = Game.spawns[s];
-        var r = a_spawn.room;
-        var room_level = Game.spawns[s].room.controller.level;
-        var r_storage = r.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_STORAGE})[0];
-        
-        var sources = r.find(FIND_SOURCES);
-        
-        
-        if(r_storage != undefined){
-            
-
-            var linkTo = r_storage.pos.findInRange(FIND_MY_STRUCTURES, 2, 
-                {filter: {structureType: STRUCTURE_LINK}})[0];
-                
-            var otherLinks = r_storage.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_LINK && s.id != linkTo.id && s.energy > 100} );
-            
-            for(var i in otherLinks){
-                var linkFrom = otherLinks[i];
-                
-                //var linkFrom = sources[i].pos.findInRange(FIND_MY_STRUCTURES, 3, 
-                //    {filter: s => s.structureType == STRUCTURE_LINK && s.energy > 700})[0];
-                if(linkFrom != undefined){
-                    linkFrom.transferEnergy(linkTo);
-                }
-            }
-        }*/
+  
         tower.run(s);
 
     }

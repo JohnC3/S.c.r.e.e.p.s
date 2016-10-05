@@ -12,7 +12,7 @@ var roleCollector = {
         
         if(creep.memory.dropoff){
             // Return everything you have to storeage!
-            var storage = creep.room.find(FIND_STRUCTURES, { filter: s => s.structureType == STRUCTURE_STORAGE})[0];
+            var storage = creep.room.storage;
             
             // If the creep is empty go pick up.
             if(total == 0){
@@ -28,35 +28,11 @@ var roleCollector = {
                 }
             }
         }
-        
-        // Go gather
         else{
-            var loot = creep.room.find(FIND_DROPPED_ENERGY);
-            
-            if(total == creep.carryCapacity){
-                creep.memory.dropoff = true;
-
+            var extractor = creep.room.find(FIND_MINERALS)[0];
+            if(creep.harvest(extractor) == ERR_NOT_IN_RANGE){
+                creep.moveTo(extractor);
             }
-            else{
-                
-                if (loot.length > 0){
-                    var target = creep.pos.findClosestByRange(loot);
-                    if(creep.pickup(target) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(target);
-                        creep.pickup(target);
-                    }
-                }
-                else{
-                    var extractor = creep.room.find(FIND_MINERALS)[0];
-                    if(creep.harvest(extractor) == ERR_NOT_IN_RANGE){
-                        creep.moveTo(extractor);
-                    }
-                    
-                }
-                
-            }
-
-            
         }
     }
 }

@@ -50,15 +50,24 @@ var roleDistributer = {
                     }
                     
                     if(Tattempt == OK){
+                        
+                        /*
                         var X = creep.pos.x;
                         var Y = creep.pos.y;
                         
+                        console.log('distributer say')
+                        
                         var surrounding_structures = sources[i].room.lookForAtArea(LOOK_STRUCTURES, Y - 1, X - 1, Y + 1, X + 1, true);
+                        
+                        for (j in surrounding_structures){
+                            
+                            creep.say(creep.transfer(drop_struct,surrounding_structures[j]));
+                        }
                         console.log(surrounding_structures)
                         
                         console.log(surrounding_structures[0])
                         
-                        var allPositions = _.reject(surrounding_structures, {'terrain': 'wall'}).length;
+                        var allPositions = _.reject(surrounding_structures, {'terrain': 'wall'}).length;*/
                     }
                     else{
                         creep.memory.gathering = false;
