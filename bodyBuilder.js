@@ -147,6 +147,62 @@ var bodyBuilder = {
         return upgrader_body.sort();
 
     },
+    // Largest milita the room can currently build, if roads is false then it needs a move part per each other part
+    largest_milita:function(SpawnLoc){
+        
+        var cur_room = SpawnLoc.room;
+        
+        var room_development = cur_room.energyAvailable;
+        
+        var milita_body = new Array(MOVE,MOVE,ATTACK,RANGED_ATTACK);
+        
+        var cost_of_milita = ecoAI.bodyCost(milita_body);
+        
+        var Fatigue = 0;
+
+        var work_parts = 0;
+        
+        
+        while(cost_of_milita < room_development - 150){
+            
+            if(Fatigue > 0){
+                milita_body.push(MOVE);
+                cost_of_milita += 50;
+                Fatigue = Fatigue -2;
+            }
+            else{
+                // Every 2nd ranged part add a attack part instead of a work part
+                if (work_parts == 1){
+                    work_parts = 0;
+                    milita_body.push(ATTACK);
+                
+                    cost_of_milita += 80;
+                    Fatigue += 2;
+                    
+                }
+                else{
+                    milita_body.push(RANGED_ATTACK);
+                    
+                    cost_of_milita += 150;
+                    Fatigue += 2;
+                    
+                    work_parts += 1;
+                }
+            }
+            if(Fatigue > 0){
+                milita_body.push(MOVE);
+                cost_of_milita += 50;
+                Fatigue = Fatigue -2;
+            }
+        }
+        console.log(milita_body.sort())
+        console.log('cost '+ecoAI.bodyCost(milita_body))
+        console.log('capacity '+room_development)
+        return milita_body.sort();
+
+    },
+    
+    
     // Largest upgrader
     largest_worker:function(SpawnLoc){
         
@@ -175,6 +231,17 @@ var bodyBuilder = {
         }
         
         return workerBody.sort()
+    },
+    
+    // Compute the cost of a given creep body.
+    bodyCost:function(body){
+        var partCost = {work:100,carry:50,move:50,tough:10,claim:600,attack:80,ranged_attack:150,heal:250};
+        var total = 0;
+        for(var i = 0; i<body.length; i++){
+            total = total + partCost[body[i]]; 
+            
+        }
+        return total;
     }
 }
 

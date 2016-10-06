@@ -1,5 +1,6 @@
 ecoAI = require('eco.AI')
 
+intel = require('military.intelligence')
 
 bodyBuilder = require('bodyBuilder')
 
@@ -14,28 +15,40 @@ var spawnControl = {
         var enemy_creeps = cur_room.find(FIND_HOSTILE_CREEPS);
         
         //Memory.creeps_needed[cur_room.name] = {};
-
+        if(enemy_creeps.length > 0){
+            spawnControl.military(spawn,enemy_creeps);
+        }
         spawnControl.economic(spawn);
         
-        if(enemy_creeps.length > 0){
-            spawnControl.military(spawn);
-        }
+
 
         
         
     },
     
-    military:function(spawn){
+    military:function(spawn,current_hostiles){
+        
+        
         
         var currentSpawn = Game.spawns[spawn];
-
+        
+        
         var cur_room = currentSpawn.room;
         
-        var militia_size = Memory.population['trooper']['station'] || 0;
+        var militia_size = Memory.population['trooper']['station'][cur_room.name] || 0;
+        
+        console.log(currentSpawn.name+' is under threat current milita '+militia_size);
+
         
         if (militia_size < 1){
-            var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],"Militia"+Memory.N,{'role':'trooper','rally_flag':currentSpawn.name+'militia'});
-        } 
+            var militia_body = bodyBuilder.largest_milita(currentSpawn)
+            var name = currentSpawn.createCreep(militia_body,"Militia"+Memory.N,{'role':'trooper','station':currentSpawn.room.name,'defender':true});
+            console.log('spawning militia ' + name)
+        }
+        for(h in current_hostiles){
+            var enemy = current_hostiles[h];
+            intel.rampart_to_man(enemy);
+        }
         
         
     },
@@ -124,12 +137,27 @@ var spawnControl = {
             Memory.Upgraders_needed = {}
         }
         
-        if(upgraders_needed == undefined || Memory.T == 1){
+        if(upgraders_needed == undefined || Memory.T > 1){
             
             var harvest_cost = ecoAI.harvestCost(SpawnLoc);
             
-            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 3000 - harvest_cost);
             
+            // The number of feeders a room has. 
+            var remote_mines = {'Spawn4':4,'Spawn1':1,'Spawn3':2}
+            
+            
+            /*
+            try{
+                var remote_profit = ((1500 - harvest_cost)*remote_mines[currentSpawn.name])/4
+                console.log('remote mine income theoritical '+remote_profit+' from '+currentSpawn.name);
+                
+                Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 3000 + remote_profit - harvest_cost);remote_mines
+            }catch(TypeError){
+                Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 3000 - harvest_cost);
+            }*/
+            
+            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 6000 - harvest_cost);
+
             upgraders_needed = Memory.Upgraders_needed[cur_room];
             
             
@@ -206,12 +234,11 @@ var spawnControl = {
         var work_parts_in_miner = _.filter(miner_body,p => p == WORK).length;
 
         if(Miners*work_parts_in_miner < num_sources*5  && Miners < 6){
-            console.log('Miners')
             var name = currentSpawn.createCreep(miner_body,"Miner"+Memory.N,{'role':'miner','station':cur_room.name});
         } 
         
         if(num_storage == 1){
-            if (_.filter(Game.creeps, (c)=>c.memory.role == 'distributer' && c.room.name == cur_room.name && c.memory.emergency != true && c.ticksToLive > 100).length < 1){
+            if (_.filter(Game.creeps, (c)=>c.memory.role == 'distributer' && c.room.name == cur_room.name && c.memory.emergency != true && c.ticksToLive > 100).length < 2){
                 
                 var name = currentSpawn.createCreep(transportBody,"Distributer"+Memory.N,{'role':'distributer','station':cur_room.name,'droplocation':cur_room.name});
                 
@@ -272,7 +299,7 @@ var spawnControl = {
         }
         
         if (name != -4 && name != -6 && name != undefined){
-                console.log(""+RoomName+" "+name);
+                console.log(""+SpawnLoc.name+" "+name);
                 Memory.N = Memory.N +1;
         }
     },

@@ -77,12 +77,12 @@ var ecoAI = {
         console.log('total_energy_in_budget '+total_energy_in_budget)
         
         // How many are needed to do the work?
-        var harvesters_needed = Math.round(total_energy_in_budget/total_energy_cost)
+        var upgraders_needed = Math.round(total_energy_in_budget/total_energy_cost)
         
-        console.log('harvesters_needed '+harvesters_needed)
+        console.log('upgraders_needed '+upgraders_needed)
         
-        if(harvesters_needed == 0){
-            harvesters_needed = 1;
+        if(upgraders_needed == 0){
+            upgraders_needed = 1;
         }
         
         //How efficent is it? In terms of creep cost vs work done?
@@ -90,7 +90,7 @@ var ecoAI = {
         
         console.log('energy_efficency '+energy_efficency)
         
-        return harvesters_needed
+        return upgraders_needed
     },
     // Compute the energy cost of the miners trucks, linkers and distributers
     harvestCost:function(SpawnLoc, numMiners = 2,numTrucks = 2,numDistributers = 1, budget = 2000 , income_per_300 = 3000){
