@@ -28,7 +28,7 @@ module.exports.loop = function () {
         Memory.N = 1;
     }
     
-    if (Memory.T> 50 || Memory.N == undefined){
+    if (Memory.T> 100 || Memory.N == undefined){
         Memory.T = 1;
     } else{
         Memory.T += 1;
@@ -72,19 +72,21 @@ module.exports.loop = function () {
         
         // What room is it stationed in? If it has a add that station to the dictionary then add the creep station add it to said station.
         if (creep.memory.station != undefined){
-            
             if(Memory.population[creep.memory.role]['station'][creep.memory.station] == null || Memory.population[creep.memory.role]['station'][creep.memory.station]  == undefined ){
                 Memory.population[creep.memory.role]['station'][creep.memory.station] = 0;
             }
-            Memory.population[creep.memory.role]['station'][creep.memory.station] += 1;
         }
+        Memory.population[creep.memory.role]['station'][creep.memory.station] += 1;
+        
         // What room is it currently in?
         if(Memory.population[creep.memory.role]['room'][creep.room.name] == null || Memory.population[creep.memory.role]['room'][creep.room.name]  == undefined ){
             Memory.population[creep.memory.role]['room'][creep.room.name] = 0;
         }
+
+
         Memory.population[creep.memory.role]['room'][creep.room.name] += 1;
- 
- 
+
+        var creep = Game.creeps[name];
  
         // If a creep is set to trace create a road at its location every tick.
         if(creep.memory.trace){
@@ -101,7 +103,7 @@ module.exports.loop = function () {
 
     }
     
-    for( var r in Game.rooms){
+    /*for( var r in Game.rooms){
         
         current_room = Game.rooms[r]
         
@@ -135,11 +137,11 @@ module.exports.loop = function () {
             }            
         }
  
-    }
+    }*/
 
     // Set up remote mining operations.
-    spawnControl.remote_source_mine("W53S32",Game.spawns.Spawn3,3,1,1);
-    spawnControl.remote_source_mine("W54S33",Game.spawns.Spawn3,3,1,1);
+    spawnControl.remote_source_mine("W53S32",Game.spawns.Spawn3,2,1,1);
+    spawnControl.remote_source_mine("W54S33",Game.spawns.Spawn3,2,1,1);
     spawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,2,1,1);
     
     spawnControl.remote_source_mine("W51S34",Game.spawns.Spawn4,2,1,1);

@@ -1,3 +1,5 @@
+var intel = require('military.intelligence');
+
 var towerControl = {
     
     run:function(spawn){
@@ -12,10 +14,11 @@ var towerControl = {
         
         
             if(tower) {
-                var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-                if(closestHostile) {
-                    tower.attack(closestHostile);
-                }else if(tower.energy > 555){
+                var target = towerControl.pick_target(tower,numTowers = towers.length);
+                
+                if(target) {
+                    tower.attack(target);
+                }else if(tower.energy > 750){
                     var rampart = tower.pos.findClosestByRange(FIND_STRUCTURES, {
                         filter: (structure) => 
                         (structure).hits < 1000 && 
@@ -40,6 +43,44 @@ var towerControl = {
                 }
             }
         }
+    },
+    pick_target:function(tower,numTowers = 1){
+        // Use the intel functions to choose from a list of creeps.
+        try{
+            
+            // Find all hostiles in the room
+            var allHostiles = tower.pos.find(FIND_HOSTILE_CREEPS);
+            
+            // Find the most damage you can inflict, dont shoot at creeps that can out heal your damage!
+            
+            var inflict = 0;
+            
+            var target = undefined;
+            
+            for(i in allHostiles){
+                var hostile = allHostiles[i];
+                
+                var damage_to_target = intel.tower_DPS(tower,hostile);
+                
+                var target_selfheal = intel.heal_DPS(hostile);
+                
+                if(inflict < damage_to_target - target_selfheal){
+                    inflict = damage_to_target - target_selfheal;
+                    target = creep;
+                }
+                
+            }
+            
+            return target;
+            
+
+        }catch(Error){
+            // If it breaks just choose the closest
+            var target = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+            
+            return target;
+        }
+        
     }
 }
 
