@@ -94,13 +94,22 @@ var roleMiner = {
                     
                 } else{
                     //THIS IS SUPER CPU INTENSIVE!
-                    var link = creep.pos.findInRange(FIND_STRUCTURES, 2, { 
+                    var link = creep.pos.findInRange(FIND_STRUCTURES, 1, { 
                         filter: (structure) => structure.structureType == STRUCTURE_LINK && structure.energy < structure.energyCapacity
+                        });
+                        
+                    var adjacent_containers = creep.pos.findInRange(FIND_STRUCTURES, 1, { 
+                        filter: (structure) => structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] < 2000
                         });
             	       
         	        if (link.length > 0) {
     	                var j = creep.transfer(link[0], RESOURCE_ENERGY);
-    	            } else {
+    	            } else if(adjacent_containers.length > 0){
+    	                creep.say('transfer')
+    	                creep.transfer(adjacent_containers[0], RESOURCE_ENERGY);
+    	            }
+    	            
+    	            else {
                         
     	                creep.drop(RESOURCE_ENERGY);
     	            }

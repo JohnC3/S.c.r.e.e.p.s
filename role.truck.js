@@ -21,7 +21,7 @@ var roleTruck = {
             creep.memory.gathering = true;
         }
         
-        if(creep.carry.energy == 0){
+        if(_.sum(creep.carry) == 0){
             creep.memory.gathering = true;
         }
         
@@ -33,7 +33,7 @@ var roleTruck = {
 
             
             // If full goto dropoff mode.
-            if(creep.carry.energy == creep.carryCapacity){
+            if(_.sum(creep.carry) == creep.carryCapacity){
                 creep.memory.gathering = false;
                 creep.memory.pickupPoint = undefined;
             }
@@ -58,10 +58,13 @@ var roleTruck = {
                     var closest_dropoff = creep.pos.findClosestByRange(ST)
                     //creep.say('hi')
                     
-                    if (creep.transfer(closest_dropoff,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+                    if(creep.pos.inRangeTo(closest_dropoff.pos,1)){
+                        for(var resourceType in creep.carry) {
+                            creep.transfer(closest_dropoff, resourceType)
+                        }
+                    } else{
                         creep.moveTo(closest_dropoff);
                     }
-                    
                 }
                 // If such a place exists go and transfer to it.
                 else if (drop_points.length > 0){
@@ -89,7 +92,7 @@ var roleTruck = {
                         creep.moveTo(drop_struct);
                     }
                     // If the harvester is now empty it should pickup more energy
-                    else if(creep.carry.energy == 0){
+                    else if(_.sum(creep.carry) == 0){
                         creep.memory.gathering = true;
                     }
                 }
