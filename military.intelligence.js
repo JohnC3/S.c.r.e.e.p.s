@@ -23,7 +23,7 @@ var intel = {
         
         var attacks_in_progress = 0;
         
-        for( var r in Game.rooms){
+        for(var r in Game.rooms){
             
             current_room = Game.rooms[r]
             
@@ -37,11 +37,11 @@ var intel = {
                 
                 // Defenders assigned to defend that room
                 
-                var assigned_defenders = Memory.population['trooper']['station'][current_room.name]
+                var assigned_defenders = Memory.population['trooper']['station'][current_room.name] || 0;
                 
                 // Assign new defenders to the room by proximity to the room but only from the pool of creeps whos room is safe (but not undefined)
                 
-                if(assigned_defenders < enemy_creeps.length){
+                if(assigned_defenders < Math.max(enemy_creeps.length,2)){
                     
                     var closest = _.sortBy(idle_troops,{function(c){ return Game.map.getRoomLinearDistance(current_room.name,c.room.name)}})
                     
@@ -52,7 +52,7 @@ var intel = {
                     
                     // Original assignment
                     if(idler){
-                        console.log(idler.name +' rebaseing from '+idler.memory.station+' to '+current_room.name)
+                        console.log(idler.name +' leaving room '+current_room.name+' to defend '+idler.memory.station)
                     
                         idler.memory.station = current_room.name;
                     }else{
@@ -60,6 +60,9 @@ var intel = {
                     }
                     
 
+                }
+                else{
+                    console.log('assigned_defenders '+assigned_defenders)
                 }
                 
                 Game.flags.troops.setPosition( new RoomPosition(25,25, r))
@@ -91,20 +94,23 @@ var intel = {
         for(i in troops){
             var trooper = troops[i];
             
-            // If enemys is undefined that means the workers in that room have been killed.
-            if(Game.rooms[trooper.memory['station']] != undefined){
-                
-                var enemys = Game.rooms[trooper.memory['station']].find(FIND_HOSTILE_CREEPS)
-                // If no enemys add to idle troops
-                if(enemys.length == 0){
-                    idle_defenders.push(trooper)
-                }
-                
+            // If a trooper is in a room with enemy creeps it is not idle
+            var hostiles = trooper.room.find(FIND_HOSTILE_CREEPS);
+            // If a trooper is stationed in a room with enemy creeps it is not idle. (true when value >0 or value is undefined)
+            var hostiles_Station = Game.rooms[trooper.memory['station']]
+            
+            // If not undefined get hostiles.
+            if(hostiles_Station != undefined){
+                var hostiles_Station = hostiles_Station.find(FIND_HOSTILE_CREEPS).length;
+            } else{
+                hostiles_Station = 2;
             }
             
-            
+            if(hostiles.length == 0 && (hostiles_Station == 0 && hostiles_Station != undefined)){
+                idle_defenders.push(trooper)
+            }
         }
-        
+        //console.log('idle_defenders '+idle_defenders.length)
         return idle_defenders
         
     },    
@@ -176,6 +182,7 @@ var intel = {
         return DPS
         
     },
+    
     // Getter functions
     melee_DPS:function(creep){
         return intel.creep_DPS(creep)['melee']['DPS'];
@@ -186,6 +193,7 @@ var intel = {
     heal_DPS:function(creep){
         return intel.creep_DPS(creep)['heal']['DPS'];
     },
+    
     // Find how much damage a tower object will do to a creep object
     tower_DPS:function(tower,creep){
         // When range is less then 5 a tower does 600 damage dropping to 150 damage at a range of 20 or more.
@@ -202,6 +210,7 @@ var intel = {
         }
         return damage
     },
+    
     // How much does the body of this creep cost? Can our spawns build a copy?
     superior_enemy:function(creep,x){
 
@@ -217,6 +226,7 @@ var intel = {
             return false
         }
     },
+    
     // Get the closest rampart to a enemy creep.
     rampart_to_man:function(creep){
         
@@ -229,6 +239,7 @@ var intel = {
             Game.flags['WallPost'+SpawnName].setPosition(nearby_rampart.pos);
         }
     },
+    
     // How much damage a hit will do to functional parts (Everything but tough)
     functional_damage:function(creep,incomeing_damage){
         // while the attack has some power left keep removing body parts and reduceing attack strength.
