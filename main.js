@@ -18,6 +18,9 @@ var intel = require('military.intelligence')
 
 module.exports.loop = function () {
     
+    
+    
+    
     intel.defense()
     
 
@@ -37,14 +40,15 @@ module.exports.loop = function () {
         Memory.T += 1;
     }
     
-    
+    // Delete dead creeps from memory
     for(var i in Memory.creeps) {
         if(!Game.creeps[i]) {
             delete Memory.creeps[i];
         }
 
-        
     }
+    
+    // Arrays for the remoteMiner code. They need to be here.
     Memory.miners = new Array();
     Memory.occupied_sources = new Array();
     
@@ -119,11 +123,6 @@ module.exports.loop = function () {
     for(s in Game.spawns){
 
         spawnControl.run(s)
-        // Test that the custom made workers are well working
-        
-        //var x = bodyBuilder.largest_upgrader(a_spawn)
-        //ecoAI.optimalUpgraders(a_spawn,x)
-        //ecoAI.harvestCost(a_spawn)
 
         linkControl.run(s)
   
