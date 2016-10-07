@@ -10,76 +10,57 @@
     * how many reps will a builder get done? 
 */
 var ecoAI = {
-    
-    energyHistory:function(spawn){
-        
-        if(Memory.blackLedger == undefined){
-            Memory.blackLedger = {}
-        } else if(blackLedger[spawn.name] == undefined){
-            blackLedger[spawn.name] = {'Energy_Harvested':[],'Max_energy_harvested':[]};
-        }
-        
-        
-        
-        
-    },
+
     // Compute optimal number of upgraders.
     optimalUpgraders:function(SpawnLoc,upgrader_body, budget = 2000 , income_per_300 = 3000){
         
         roomName = SpawnLoc.room.name;
         
-        console.log(SpawnLoc.name)
-        // By default creeps live for only 1500 ticks        
+        
+        // By default creeps live for only 1500 ticks.      
         var life_span = 1500;
 
         var body_cost = ecoAI.bodyCost(upgrader_body);
         
-        console.log('body_cost '+body_cost)
         
         // Each creep will travel 2 times the distance from the energy source to the controller at a speed determined by its body. So the approximate number of ticks a creep spends intransit are as follows.
         var ticks_per_trip = 2*ecoAI.upgradeDistance(roomName)*ecoAI.moveSpeed(upgrader_body);
         
-        console.log('ticks_per_trip '+ticks_per_trip)
         // It will take a number of ticks equal to the creeps CARRY capacity / number of work parts to complete its job.
         
         var carryCapacity = 50*(_.filter(upgrader_body,function(p){return p == CARRY}).length);
         
-        console.log('carryCapacity '+carryCapacity)
         var workParts = _.filter(upgrader_body,function(p){return p == WORK}).length
-        
-        console.log('workParts'+workParts)
         
         // Number of ticks a single job will bring about.
         var ticks_of_work = Math.ceil((carryCapacity)/workParts);
         
-        console.log('ticks_of_work '+ticks_of_work)
-        
         // Total number of ticks to get energy insert it and return
-        var ticks_per_job = ticks_of_work + 2* ticks_per_trip
-        console.log('ticks_per_job '+ticks_per_job)
+        var ticks_per_job = ticks_of_work + (2 * ticks_per_trip)
+        
         
         
         // Number of trips in lifetime
         var jobs_in_life = Math.floor(life_span/ticks_per_job)
-        console.log('jobs_in_life '+jobs_in_life)
-        
         
         // Energy used for work in lifetime
         lifetime_energy_contribution = Math.floor(life_span/ticks_per_job) * carryCapacity
-        console.log('lifetime_energy_contribution '+lifetime_energy_contribution)
         
         // Total energy cost of one creep in its operationa life
         total_energy_cost = lifetime_energy_contribution + body_cost
-        console.log('total_energy_cost '+total_energy_cost)
         
         // Total energy in the budget for the room over the course of one lifetime
-        total_energy_in_budget = budget * (1500/300)
-        console.log('total_energy_in_budget '+total_energy_in_budget)
+        total_energy_in_budget = budget * (life_span/300)
+        
+        // If one creep uses more then the entire budget.
+        var creep_overspend = total_energy_cost - total_energy_in_budget
+        
+
         
         // How many are needed to do the work?
         var upgraders_needed = Math.round(total_energy_in_budget/total_energy_cost)
         
-        console.log('upgraders_needed '+upgraders_needed)
+        
         
         if(upgraders_needed == 0){
             upgraders_needed = 1;
@@ -87,60 +68,28 @@ var ecoAI = {
         
         //How efficent is it? In terms of creep cost vs work done?
         var energy_efficency = lifetime_energy_contribution/total_energy_cost
+
+        console.log(SpawnLoc.name+'\n'
+        +'body_cost '+body_cost+'\n'
+        +'ticks_per_trip '+ticks_per_trip+'\n'
+        +'carryCapacity '+carryCapacity+'\n'
+        +'workParts'+workParts+'\n'
+        +'ticks_of_work '+ticks_of_work+'\n'
+        +'ticks_per_job '+ticks_per_job+'\n'
+        +'jobs_in_life '+jobs_in_life+'\n'
+        +'lifetime_energy_contribution '+lifetime_energy_contribution+'\n'
+        +'total_energy_cost '+total_energy_cost+'\n'
+        +'total_energy_in_budget '+total_energy_in_budget+'\n'
+        +'creep_overspend '+creep_overspend+ '\n'
+        +'upgraders_needed '+upgraders_needed+'\n'
+        +'energy_efficency '+energy_efficency+'\n')
         
-        console.log('energy_efficency '+energy_efficency)
-        
-        return upgraders_needed
+        return upgraders_needed,creep_overspend
     },
-    // Compute the energy cost of the miners trucks, linkers and distributers
-    harvestCost:function(SpawnLoc, numMiners = 2,numTrucks = 2,numDistributers = 1, budget = 2000 , income_per_300 = 3000){
-        console.log(SpawnLoc.name+' must alocate at least this much energy to maintain its miners trucks and distributers')
-        
-        var roomName = SpawnLoc.room.name;
-        
-        var miner_body_cost = ecoAI.bodyCost(Memory.creepBody[roomName]['miner']);
-        
-        console.log('miner_body_cost '+miner_body_cost)
-        
-        var transport_body_cost = ecoAI.bodyCost(Memory.creepBody[roomName]['transport']);
-        
-        console.log('transport_body_cost '+transport_body_cost)
-        
-        
-        // All linkers have the same body 
-        var linker_body_cost = ecoAI.bodyCost([CARRY,CARRY,CARRY,CARRY,MOVE]);
-        
-        console.log('transport_body_cost '+transport_body_cost)
-
-
-        // By default creeps live for only 1500 ticks        
-        var life_span = 1500;
-        
-        // To maintain this rate we require 
-        
-        var total_build_cost = miner_body_cost*numMiners + transport_body_cost *(numTrucks + numDistributers) + linker_body_cost;
-        
-        console.log('total_build_cost '+total_build_cost)
-
-        // Total energy harvested during this period
-        var total_energy_in_budget = income_per_300 * 5
-        console.log('total_energy_in_budget '+total_energy_in_budget)
-        
-        // What portion of the energy is budgeted towards them?
-        var budget_needed = (total_build_cost/total_energy_in_budget) * income_per_300
-        console.log(budget_needed);
-        
-        
-        return budget_needed
-    },
-    
-    
     // Compute the distance between the controller and the storage (or spawn if no storage is available)
     upgradeDistance:function(roomName){
         // Step one find a path
         var base = Game.rooms[roomName];
-        
-
 
         // Distance between storage and spawn and spawn and  for storage.
         
@@ -157,23 +106,66 @@ var ecoAI = {
                 var link = base.controller.pos.findInRange(FIND_MY_STRUCTURES, 6,{filter: {structureType: STRUCTURE_LINK}})[0];
                 var path = base.findPath(link.pos,base.controller.pos)
             }
+            // Upgrade has a length of 3 so thats all we need.
+            if(path.length <= 3){
+                return 0
+            }else{
+                return path.length
+            }
             
-            
-            return path.length
         }
         else{
-            console.log('undefined again')
+            console.log('Upgrade distance is undefined again')
         }
         
     },
-    
+    // Compute the energy cost of the miners trucks, linkers and distributers
+    harvestCost:function(SpawnLoc, numMiners = 2,numTrucks = 2,numDistributers = 1, budget = 2000 , income_per_300 = 3000){
+        
+        
+        var roomName = SpawnLoc.room.name;
+        
+        var miner_body_cost = ecoAI.bodyCost(Memory.creepBody[roomName]['miner']);
+        
+        
+        var transport_body_cost = ecoAI.bodyCost(Memory.creepBody[roomName]['transport']);
+        
+        // All linkers have the same body 
+        var linker_body_cost = ecoAI.bodyCost([CARRY,CARRY,CARRY,CARRY,MOVE]);
+        
+        // By default creeps live for only 1500 ticks        
+        var life_span = 1500;
+        
+        // To maintain this rate we require 
+        
+        var total_build_cost = miner_body_cost*numMiners + transport_body_cost *(numTrucks + numDistributers) + linker_body_cost;
+        
+        // Total energy harvested during this period
+        var total_energy_in_budget = income_per_300 * 5
+        
+        // What portion of the energy is budgeted towards them?
+        var budget_needed = (total_build_cost/total_energy_in_budget) * income_per_300
+        
+        console.log(SpawnLoc.name+' needs at least '+budget_needed+'\n'
+        + 'miner_body_cost '+miner_body_cost+'\n'
+        + 'transport_body_cost '+transport_body_cost+'\n'
+        + 'transport_body_cost '+transport_body_cost+'\n'
+        + 'total_build_cost '+total_build_cost+'\n'
+        + 'total_energy_in_budget '+total_energy_in_budget);
+        
+        
+        return budget_needed
+    },
+        
 
     // Compute how many ticks a creep with a body of that type needs to move across a plane, road, or swamp.
     moveSpeed:function(body,terrain = 'plane'){
         
         var move_rate = 0;
-        
+        // Factor in the terrain multiplier on fatigue
         var Tfactor = {'road':1,'plane':2,'swamp':10}[terrain];
+        
+        // Count up the bitz
         var moveParts = 0;
         var otherParts = 0;
         for(var i = 0; i < body.length;i++){
