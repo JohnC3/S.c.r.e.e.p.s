@@ -10,6 +10,94 @@ var bodyBuilder = require('bodyBuilder');
 
 var intel = {
     
+    // Defend my rooms from invaders and so on
+    defense:function(){
+        
+        // Get the idle troops
+        idle_troops = intel.find_available_troops();
+        
+        for( var r in Game.rooms){
+            
+            current_room = Game.rooms[r]
+            
+            var enemy_creeps = current_room.find(FIND_HOSTILE_CREEPS);
+            
+            // how many rooms are currently under attack?
+            
+            var attacks_in_progress = 0;
+            
+            if(enemy_creeps.length > 0){
+                
+                attacks_in_progress += 1;
+                
+                // Defenders assigned to defend that room
+                
+                var assigned_defenders = Memory.population['trooper']['station'][current_room.name]
+                
+                // Assign new defenders to the room by proximity to the room but only from the pool of creeps whos room is safe (but not undefined)
+                
+                if(assigned_defenders < enemy_creeps.length){
+                    
+                    var closest = _.sortBy(idle_troops,{function(c){ return Game.map.getRoomLinearDistance(current_room.name,c.room.name)}})
+                    
+                    console.log(closest)
+                    
+                    // Get the closest idle trooper
+                    var idler = closest.shift()
+                    
+                    // Original assignment
+                    
+                    console.log(idler.name +' rebaseing from '+idler.memory.station+' to '+r)
+                    
+                    idler.memory.station = r
+                }
+                
+                Game.flags.troops.setPosition( new RoomPosition(25,25, r))
+                
+                if (current_room.name == 'W52S33'){
+                    current_room.controller.activateSafeMode();
+                }
+            }
+
+            if(attacks_in_progress > 0){
+                console.log('attacks_in_progress '+attacks_in_progress)
+            }
+
+     
+        }
+    },
+    // Find every available trooper.
+    find_available_troops:function(){
+        
+        // Array of idle defenders.
+        
+        var idle_defenders = new Array();
+        
+        var troops = _.filter(Game.creeps,c => c.memory.role == 'trooper' && c.memory['defender'] != true)
+        
+        for(i in troops){
+            var trooper = troops[i];
+            
+            // If enemys is undefined that means the workers in that room have been killed.
+            if(Game.rooms[trooper.memory['station']] != undefined){
+                
+                var enemys = Game.rooms[trooper.memory['station']].find(FIND_HOSTILE_CREEPS)
+                // If no enemys add to idle troops
+                if(enemys.length == 0){
+                    idle_defenders.push(trooper)
+                }
+                
+            }
+            
+            
+        }
+        
+        return idle_defenders
+        
+    },
+    
+    
+    
     // DPS of a creep.
     creep_DPS:function(creep){
         
@@ -64,7 +152,7 @@ var intel = {
         return intel.creep_DPS(creep)['heal']['DPS'];
     },
     // Find how much damage a tower object will do to a creep object
-    tower_DPS:function(tower,target){
+    tower_DPS:function(tower,creep){
         // When range is less then 5 a tower does 600 damage dropping to 150 damage at a range of 20 or more.
         var distance = tower.pos.getRangeTo(creep);
         
