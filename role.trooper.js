@@ -1,6 +1,17 @@
 var roleTrooper = {
     
     run: function(creep){
+        
+        if(creep.memory.station == undefined){
+            creep.memory.station = creep.room.name;
+        } 
+        if(creep.memory.rally_flag){
+            if(Game.flags[creep.memory.rally_flag].room.name != creep.memory.station){
+                creep.memory.station = Game.flags[creep.memory.rally_flag].room.name
+            }            
+        }
+
+        
         // Temporary pending code that checks if the walls of a room are up.
         creep.room.memory.wallsup = true
         
@@ -8,12 +19,12 @@ var roleTrooper = {
             roleTrooper.man_rampart(creep)
         }
         else{
-        
-            if(Game.flags[creep.memory.rally_flag].room != creep.room){
-                creep.moveTo(Game.flags[creep.memory.rally_flag]);
+            // Move to the correct room.
+            if(creep.room.name != creep.memory.station){
+                creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
             }
             else{
-                
+                /*
                 if (creep.memory.AttackStruct){
                     var tower = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {filter: (structure) => structure.structureType == STRUCTURE_SPAWN});
                     if (tower != null){
@@ -33,15 +44,19 @@ var roleTrooper = {
                         
                     }
                 } 
-                
-                else{
+                */
+                //else{
     
                     
                     var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+                    
+
+                    
                     if (target){
-                        if(creep.attack(target) == ERR_NOT_IN_RANGE){
+                        if(roleTrooper.melee(creep,target) == ERR_NOT_IN_RANGE){
                             creep.moveTo(target);
                         }
+                        roleTrooper.ranged(creep,target);
                     }
                     else{
                         if(creep.memory.rally_flag){
@@ -52,7 +67,7 @@ var roleTrooper = {
                         }
                         
                     }            
-                }
+                //}
                 //Seek out and attack any creeps other then mine.
             }
         }
@@ -66,21 +81,21 @@ var roleTrooper = {
         if(creep.pos.getRangeTo(target_flag) > 0){
             creep.moveTo(target_flag)
         }
-        roleTrooper.melee(creep);
-        roleTrooper.ranged(creep);
+        
+        var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+        
+        roleTrooper.melee(creep,target);
+        roleTrooper.ranged(creep,target);
     },
     // Attack adjacent with melee creeps
-    melee:function(creep){
+    melee:function(creep,target){
         // For now just pick the nearist
-        var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        // If defined
         if(target){
             return creep.attack(target);
         }
     },
     // Attack ranged target.
-    ranged:function(creep){
-        var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+    ranged:function(creep,target){
         // If defined
         if(target){
             return creep.rangedAttack(target);
