@@ -15,8 +15,11 @@ var spawnControl = require('spawnControl');
 var roleMaintance = require('role.maintance')
 var tower = require('towerControl')
 var linkControl = require('linkControl')
-
+var intel = require('military.intelligence')
 module.exports.loop = function () {
+    
+    intel.defense()
+    
 
     // If a miner is an old miner create a replacement but keep working.
     // role to code used in role hash
@@ -103,42 +106,6 @@ module.exports.loop = function () {
 
     }
     
-    /*for( var r in Game.rooms){
-        
-        current_room = Game.rooms[r]
-        
-        var enemy_creeps = current_room.find(FIND_HOSTILE_CREEPS);
-        var claim_this_room = Game.flags['Take this room']
-        
-        // Rooms I plan to take dont get defended
-        if(claim_this_room.room == current_room){
-            // Move troops in once safe mode starts to wear off.
-            if(current_room.controller.safeMode < 500){
-                Game.flags.troops.setPosition( new RoomPosition(25,25, r))
-            }
-            
-        }
-        else{
-            if(enemy_creeps.length > 0 && current_room.name != 'W54S32'){
-                
-                //Temporary safe mode activation code
-                
-                if (current_room.name == 'W52S33'){
-                    current_room.controller.activateSafeMode();
-                }
-                
-                
-                try{
-                    Game.flags.troops.setPosition( new RoomPosition(25,25, r))
-                }
-                catch(TypeError){
-                    //Game.flags.createFlag()
-                }
-            }            
-        }
- 
-    }*/
-
     // Set up remote mining operations.
     spawnControl.remote_source_mine("W53S32",Game.spawns.Spawn3,2,1,1);
     spawnControl.remote_source_mine("W54S33",Game.spawns.Spawn3,2,1,1);
