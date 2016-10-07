@@ -2,15 +2,30 @@ var roleTrooper = {
     
     run: function(creep){
         
+        
         if(creep.memory.station == undefined){
             creep.memory.station = creep.room.name;
         } 
+        /*
         if(creep.memory.rally_flag){
-            if(Game.flags[creep.memory.rally_flag].room.name != creep.memory.station){
-                creep.memory.station = Game.flags[creep.memory.rally_flag].room.name
-            }            
-        }
+            
+            
+            try{
+                if(Game.flags[creep.memory.rally_flag].room.name != creep.memory.station){
+                    creep.memory.station = Game.flags[creep.memory.rally_flag].room.name
+                }
+                
+            }
 
+            catch(TypeError){
+                if(Game.flags[creep.memory.rally_flag] == undefined){
+                    console.log(creep.name +' rally flag undefined')
+                }
+                    
+                console.log(creep.memory.rally_flag)
+            }
+        }
+        */
         
         // Temporary pending code that checks if the walls of a room are up.
         creep.room.memory.wallsup = true
@@ -26,11 +41,11 @@ var roleTrooper = {
             else{
                 /*
                 if (creep.memory.AttackStruct){
-                    var tower = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {filter: (structure) => structure.structureType == STRUCTURE_SPAWN});
-                    if (tower != null){
-                        //console.log(tower)
-                        if (creep.attack(tower) == ERR_NOT_IN_RANGE){
-                            creep.moveTo(tower);
+                    var enemy_spawn = creep.pos.findClosestByRange(FIND_HOSTILE_STRUCTURES, {filter: (structure) => structure.structureType == STRUCTURE_SPAWN});
+                    if (enemy_spawn != null){
+                        //console.log(enemy_spawn)
+                        if (creep.attack(enemy_spawn) == ERR_NOT_IN_RANGE){
+                            creep.moveTo(enemy_spawn);
                         }
                     }
                     
@@ -47,31 +62,34 @@ var roleTrooper = {
                 */
                 //else{
     
-                    
-                    var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-                    
-
-                    
-                    if (target){
-                        if(roleTrooper.melee(creep,target) == ERR_NOT_IN_RANGE){
-                            creep.moveTo(target);
-                        }
-                        roleTrooper.ranged(creep,target);
+                //Seek out and attack any creeps other then mine.
+                var target = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+                
+                if (target){
+                    if(roleTrooper.melee(creep,target) == ERR_NOT_IN_RANGE){
+                        creep.moveTo(target);
+                    }
+                    roleTrooper.ranged(creep,target);
+                } // Should there no longer be a target in the room just move a little bit into the room.
+                else if(creep.pos.x < 5 || creep.pos.y < 5 || creep.pos.x > 44 || creep.pos.y > 44){
+                    creep.say('new room')
+                    creep.moveTo(new RoomPosition(23,23,creep.room.name))
+                }else{
+                    creep.say('guard duty is lame');
+                }
+                /*else{
+                    if(creep.memory.rally_flag){
+                        creep.moveTo(Game.flags[creep.memory.rally_flag]);
                     }
                     else{
-                        if(creep.memory.rally_flag){
-                            creep.moveTo(Game.flags[creep.memory.rally_flag]);
-                        }
-                        else{
-                            creep.moveTo(Game.flags.rally);
-                        }
-                        
-                    }            
-                //}
-                //Seek out and attack any creeps other then mine.
+                        creep.moveTo(Game.flags.rally);
+                    }
+                    
+                }*/        
             }
         }
     },
+    
     // Go to a wall section and man said wall section.
     man_rampart:function(creep){
         var SpawnName = creep.pos.findClosestByRange(FIND_STRUCTURES,{filter:s => s.structureType == STRUCTURE_SPAWN}).name;
