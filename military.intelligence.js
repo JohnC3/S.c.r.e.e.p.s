@@ -49,6 +49,9 @@ var intel = {
                 }
             }
         }
+        // Return the various DPSs of the creep
+        return DPS
+        
     },
     // Getter functions
     melee_DPS:function(creep){
@@ -61,7 +64,7 @@ var intel = {
         return intel.creep_DPS(creep)['heal']['DPS'];
     },
     // Find how much damage a tower object will do to a creep object
-    tower_DPS:function(tower,creep){
+    tower_DPS:function(tower,target){
         // When range is less then 5 a tower does 600 damage dropping to 150 damage at a range of 20 or more.
         var distance = tower.pos.getRangeTo(creep);
         
@@ -102,11 +105,41 @@ var intel = {
         if(nearby_rampart.pos.createFlag('WallPost'+SpawnName) == ERR_NAME_EXISTS){
             Game.flags['WallPost'+SpawnName].setPosition(nearby_rampart.pos);
         }
+    },
+    // How much damage a hit will do to functional parts (Everything but tough)
+    functional_damage:function(creep,incomeing_damage){
+        // while the attack has some power left keep removing body parts and reduceing attack strength.
+        var damage_left = incomeing_damage;
+        
+        // Local array to store the body of the creep to work on.
+        var body = creep.body;
+        
+        // Functional damage total
+        var functional_damage = 0;
+        
+        while(damage_left > 0){
+            // Take the first part.
+            var part = body.shift()
+            // How many hits does it have?
+            if(part.type == TOUGH){
+                if (part.boost){
+                    damage_left = damage_left - 50/BOOSTS['tough'][part.boost];
+                }
+            }
+            else{
+                damage_left = damage_left - 50;
+                
+                functional_damage += part.hits;
+            }
+        }
+
+        // If damage left goes negative reduce the functional damage to compensate.
+        if(damage_left < 0 && functional_damage > 0){
+            functional_damage = functional_damage + damage_left;
+        }
+        return functional_damage;
     }
-    
-    
-    
-    
+
     
     
     

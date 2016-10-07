@@ -49,32 +49,63 @@ var towerControl = {
         try{
             
             // Find all hostiles in the room
-            var allHostiles = tower.pos.find(FIND_HOSTILE_CREEPS);
+            var allHostiles = tower.room.find(FIND_HOSTILE_CREEPS);
             
-            // Find the most damage you can inflict, dont shoot at creeps that can out heal your damage!
+            // If you can finish off a creep this turn do it.
             
-            var inflict = 0;
+            var one_shotable = _.reject(allHostiles,function(c){intel.tower_DPS(tower,c) > c.hits})
             
-            var target = undefined;
+            // If a creep can heal target it && the tower can out DPS it, make it a priority target.
             
-            for(i in allHostiles){
-                var hostile = allHostiles[i];
+            var healers = _.reject(allHostiles,
+                function(c){
+                    return ((intel.heal_DPS(c) > 0) &&  (intel.tower_DPS(tower,c) > intel.heal_DPS(c)))
+                });
+            
+            // If you will damage a creeps functional parts target it.
+            
+            var crippling_blow = _.reject(allHostiles,
+                function(c){
+                    return intel.functional_damage(c) > 0
+                })
+            
+            // Run the priorities
+            // can we get a kill?
+            if(one_shotable.length > 0){
+                var targets = one_shotable;
+            // Are there any healers?
+            } else if(healers.length > 0){
+                var targets = healers;
+
                 
-                var damage_to_target = intel.tower_DPS(tower,hostile);
                 
-                var target_selfheal = intel.heal_DPS(hostile);
+            // Can we disable one of them?    
+            } else if(crippling_blow.length > 0){
+                var targets = crippling_blow;
+            } else{
+                // Dont bother with creeps that cannot be out healed
                 
-                if(inflict < damage_to_target - target_selfheal){
-                    inflict = damage_to_target - target_selfheal;
-                    target = creep;
-                }
+                var other_tower = _.reject(tower.room.find(FIND_STRUCTURES,{filter: s => s.structureType == STRUCTURE_TOWER}),function(c){c.id == tower.id})
+                
+                
+                
+                var targets = _.reject(allHostiles,function(c){intel.tower_DPS(tower,c) + intel.tower_DPS(other_tower,c) < intel.heal_DPS(c)});
+            }
+            
+            if(targets.length > 0){
+                var xxx = _.sortBy(targets,function(c){return intel.tower_DPS(c)})[0]
+                console.log(intel.tower_DPS(xxx))
+                console.log(intel.heal_DPS(xxx))
+                return xxx
+                
                 
             }
             
-            return target;
             
 
         }catch(Error){
+            
+            console.log('tower error!')
             // If it breaks just choose the closest
             var target = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
             

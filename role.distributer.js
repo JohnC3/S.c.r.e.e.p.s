@@ -40,6 +40,10 @@ var roleDistributer = {
         } 
         // When full begin dropping off energy.
         else{
+            
+            // Are there any empty towers?
+            empty_towers = _.filter(creep.room.find(FIND_STRUCTURES,{filter: c=> c.structureType == STRUCTURE_TOWER}),{filter:s => s.Energy < 500})
+            
             // If such a place exists go and transfer to it.
             if (drop_points.length > 0){
                 
@@ -50,14 +54,23 @@ var roleDistributer = {
                 }
             }
             
-            else if(creep.room.find(FIND_HOSTILE_CREEPS).length > 0){
-                var tower = creep.pos.findClosestByPath(FIND_STRUCTURES, { filter: (s) => {
-                    return ([STRUCTURE_TOWER].indexOf(s.structureType) != -1 && (s).energy < 500)}});
+            
+            
+            else if(creep.room.find(FIND_HOSTILE_CREEPS).length > 0 && empty_towers.length > 0){
+                
+                var tower = Game.getObjectById(creep.memory.priorityDrop)
+                
+                if(tower == undefined){
+                    var tower = creep.pos.findClosestByPath(FIND_STRUCTURES, { filter: (s) => {
+                        return ([STRUCTURE_TOWER].indexOf(s.structureType) != -1 && (s).energy < 500)}});
+                    creep.memory.priorityDrop = tower.id;
+                }
+                
                 if(creep.transfer(tower,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
                     creep.moveTo(drop_struct);
                 }
-                
             }
+            
             
             else{
                 if(creep.transfer(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){

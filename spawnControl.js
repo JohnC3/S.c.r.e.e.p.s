@@ -137,7 +137,7 @@ var spawnControl = {
             Memory.Upgraders_needed = {}
         }
         
-        if(upgraders_needed == undefined || Memory.T > 1){
+        if(upgraders_needed == undefined || Memory.T == 1){
             
             var harvest_cost = ecoAI.harvestCost(SpawnLoc);
             
@@ -156,7 +156,7 @@ var spawnControl = {
                 Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 3000 - harvest_cost);
             }*/
             
-            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 6000 - harvest_cost);
+            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 3000 - harvest_cost);
 
             upgraders_needed = Memory.Upgraders_needed[cur_room];
             
@@ -201,7 +201,7 @@ var spawnControl = {
         
         }
         if (Troops < 2){
-            var name = currentSpawn.createCreep([TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
+            var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,RANGED_ATTACK,RANGED_ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
         } 
         
         var extractors = cur_room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_EXTRACTOR});
