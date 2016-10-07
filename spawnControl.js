@@ -200,7 +200,7 @@ var spawnControl = {
             var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],"Raider"+Memory.N,{'role':'raider','rally_flag':'troops','AttackStruct':true});
         
         }
-        if (Troops < 2){
+        if (Troops < Memory.troops_needed){
             var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,RANGED_ATTACK,RANGED_ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
         } 
         

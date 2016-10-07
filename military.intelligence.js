@@ -16,17 +16,22 @@ var intel = {
         // Get the idle troops
         idle_troops = intel.find_available_troops();
         
+        // Total enemy creeps.
+        var total_enemy_creeps = 0
+        
+        // how many rooms are currently under attack?
+        
+        var attacks_in_progress = 0;
+        
         for( var r in Game.rooms){
             
             current_room = Game.rooms[r]
             
             var enemy_creeps = current_room.find(FIND_HOSTILE_CREEPS);
             
-            // how many rooms are currently under attack?
-            
-            var attacks_in_progress = 0;
-            
             if(enemy_creeps.length > 0){
+                
+                total_enemy_creeps += enemy_creeps.length;
                 
                 attacks_in_progress += 1;
                 
@@ -46,26 +51,34 @@ var intel = {
                     var idler = closest.shift()
                     
                     // Original assignment
+                    if(idler){
+                        console.log(idler.name +' rebaseing from '+idler.memory.station+' to '+current_room.name)
                     
-                    console.log(idler.name +' rebaseing from '+idler.memory.station+' to '+r)
+                        idler.memory.station = current_room.name;
+                    }else{
+                        console.log('no idlers')
+                    }
                     
-                    idler.memory.station = r
+
                 }
                 
                 Game.flags.troops.setPosition( new RoomPosition(25,25, r))
                 
-                if (current_room.name == 'W52S33'){
-                    current_room.controller.activateSafeMode();
-                }
-            }
+                intel.safeModeTest(current_room);
 
-            if(attacks_in_progress > 0){
-                console.log('attacks_in_progress '+attacks_in_progress)
             }
-
-     
         }
+
+        if(attacks_in_progress > 0){
+            console.log('attacks_in_progress '+attacks_in_progress)
+        }
+        
+        
+        // Maintain a garrison of at least two but otherwise equal size to that of the enemy.
+        Memory.troops_needed = Math.max(total_enemy_creeps,2)
+        
     },
+    
     // Find every available trooper.
     find_available_troops:function(){
         
@@ -94,7 +107,29 @@ var intel = {
         
         return idle_defenders
         
+    },    
+    
+    
+    // Activate safe mode if needed.
+    safeModeTest:function(curRoom){
+        
+        // If this is a owned room
+        if(curRoom.controller.owner){
+            // See if any of the functional parts (towers,spawns,extensions,etc) basically eveything but roads, walls, ramparts and containers
+            var damaged_important_structures = curRoom.find(FIND_MY_STRUCTURES,{filter: s => 
+                (s.hits < s.hitsMax) &&
+                (s.structureType != STRUCTURE_CONTAINER ||
+                s.structureType != STRUCTURE_WALL ||
+                s.structureType != STRUCTURE_ROAD ||
+                s.structureType != STRUCTURE_RAMPART)
+            })
+            if(damaged_important_structures.length > 0){
+                curRoom.controller.activateSafeMode();
+            }
+        }
     },
+    
+
     
     
     

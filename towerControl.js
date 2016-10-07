@@ -93,10 +93,11 @@ var towerControl = {
             }
             
             if(targets.length > 0){
-                var xxx = _.sortBy(targets,function(c){return intel.tower_DPS(c)})[0]
-                console.log(intel.tower_DPS(xxx))
-                console.log(intel.heal_DPS(xxx))
-                return xxx
+                var target = _.sortBy(targets,function(c){return intel.tower_DPS(c)})[0]
+                
+                //console.log(intel.tower_DPS(tower,target))
+                //console.log(intel.heal_DPS(target))
+                return target
                 
                 
             }

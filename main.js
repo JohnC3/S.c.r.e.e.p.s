@@ -9,13 +9,13 @@ var roleTrooper = require('role.trooper');
 var roleTruck = require('role.truck');
 var roleClaim = require('role.claim');
 var roleHealer = require('role.healer');
-var roleArcher = require('role.archer');
 var roleCollector = require('role.collector');
 var spawnControl = require('spawnControl');
 var roleMaintance = require('role.maintance')
 var tower = require('towerControl')
 var linkControl = require('linkControl')
 var intel = require('military.intelligence')
+
 module.exports.loop = function () {
     
     intel.defense()
