@@ -4,6 +4,13 @@ var roleMiner = {
 
     run: function(creep) {
         
+        // Store how much energy you have gathered in your life.
+        if(creep.memory.energy_harvested == undefined){
+            
+            creep.memory.energy_harvested = 0;
+            
+        }
+        
         
         //var miners = _.filter(Game.creeps, function (c) { return c.room.name == room && c.memory.role == 'miner'});
         
@@ -110,7 +117,7 @@ var roleMiner = {
     	            }
     	            
     	            else {
-                        
+                        creep.memory.energy_harvested += creep.carryCapacity;
     	                creep.drop(RESOURCE_ENERGY);
     	            }
                 }
@@ -121,6 +128,7 @@ var roleMiner = {
     // If a miner is in a remote location it should build a container under its feet!
     remote:function(creep){
         creep.drop(RESOURCE_ENERGY,45);
+        creep.memory.energy_harvested += creep.carryCapacity;
         var look = creep.room.lookAt(creep);
         look.forEach(function(lookObject) {
             if(lookObject.type == LOOK_CONSTRUCTION_SITES) {
