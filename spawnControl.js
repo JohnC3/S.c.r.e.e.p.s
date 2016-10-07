@@ -260,6 +260,36 @@ var spawnControl = {
 
     },
     
+    // Function that handles spawning of creeps
+    spawnNew:function(currentSpawn,body,name,new_creep_memory){
+        if(currentSpawn.structureType != STRUCTURE_SPAWN){
+            return 'Invalid spawn'
+        }
+        else{
+            
+            if(currentSpawn.spawning == null){
+                var mem = {
+                'role':initial_memory['role'],
+                'created':time.tick(),
+                'spawnedAt':currentSpawn.name,
+                'station':initial_memory['station'],
+                }
+                
+                return currentSpawn.createCreep(body,name,mem)
+                Memory.N += 1
+                
+            }
+            
+            else{
+                return 'spawning '+currentSpawn.spawning.name
+            }
+            
+            
+            
+
+        }
+        
+    },
     
     // Send miners trucks and claimers to a given room to mine it and return resorces to the base that spawned them.
     remote_source_mine:function(RoomName,SpawnLoc,NumTrucks,numMiners,numClaimers,claim = false){
