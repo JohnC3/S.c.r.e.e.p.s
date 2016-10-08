@@ -55,6 +55,20 @@ module.exports.loop = function () {
     // Track the population of creeps.
     Memory.population = {}
     
+    if(Memory.recorded_rooms == undefined){
+        Memory.recorded_rooms = Object.keys(Game.rooms);
+    }
+    
+    var observed_room = Object.keys(Game.rooms)
+    
+    for (var r in observed_room){
+        
+        var rname = observed_room[r]
+        if(Memory.recorded_rooms.indexOf(rname) == -1){
+            
+            Memory.recorded_rooms.push(rname)
+        }
+    }
     // Fill population with keys corresponding to every role.
     
     var all_existing_roles = Object.keys(creep_type);
@@ -62,7 +76,13 @@ module.exports.loop = function () {
     for (var i in all_existing_roles){
         
         var r = all_existing_roles[i];
-        Memory.population[r] = {'total':0,'station':{'W52S33':0},'room':{'W52S33':0}};
+        Memory.population[r] = {'total':0,'station':{},'room':{}};
+        for(var recorded_room in Memory.recorded_rooms){
+            r_name = Memory.recorded_rooms[recorded_room];
+            Memory.population[r]['station'][r_name] = 0;
+            Memory.population[r]['room'][r_name] = 0;
+        }
+        
         
     }
     
