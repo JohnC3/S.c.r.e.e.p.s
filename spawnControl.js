@@ -25,20 +25,16 @@ var spawnControl = {
         
         
     },
+
     
     military:function(spawn,current_hostiles){
-        
-        
-        
         var currentSpawn = Game.spawns[spawn];
-        
         
         var cur_room = currentSpawn.room;
         
         var militia_size = Memory.population['trooper']['station'][cur_room.name] || 0;
         
         console.log(currentSpawn.name+' is under threat current milita '+militia_size);
-
         
         if (militia_size < 1){
             var militia_body = bodyBuilder.largest_milita(currentSpawn)
@@ -50,7 +46,6 @@ var spawnControl = {
             intel.rampart_to_man(enemy);
         }
         
-        
     },
     
     
@@ -59,10 +54,6 @@ var spawnControl = {
         var currentSpawn = Game.spawns[spawn];
 
         var cur_room = currentSpawn.room;
-        
-        var cur_controler = cur_room.controller;
-        
-        var room_development = cur_room.energyCapacityAvailable;
         
         var num_sources = currentSpawn.room.find(FIND_SOURCES).length;
         
@@ -99,9 +90,29 @@ var spawnControl = {
             bodyBuilder.run(currentSpawn);
         }
         
-
-
+        // number of upgraders
+        try{
+            var upgraders_needed = Memory.Upgraders_needed[cur_room];
+        }catch(Error){
+            console.log('errror in upgraders needed by room')
+            Memory.Upgraders_needed = {}
+        }
         
+        if(upgraders_needed == undefined || Memory.T == 1){
+            
+            var harvest_cost = ecoAI.harvestCost(SpawnLoc);
+            
+            ecoAI.capUpgraderParts(SpawnLoc)
+            
+            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 2000 - harvest_cost);
+
+            upgraders_needed = Memory.Upgraders_needed[cur_room];
+            
+            
+            
+        }
+
+/*
         var Harvesters = Memory.population['harvester']['room'][currentSpawn.room.name] || 0;
 
         var Builders = Memory.population['builder']['room'][currentSpawn.room.name] || 0;
@@ -122,55 +133,43 @@ var spawnControl = {
 
         var Troops = Memory.population['trooper']['total'] || 0;
 
-        var Troops = Memory.population['trooper']['total'] || 0; 
-        
         var Raider = Memory.population['raider']['total'] || 0;
 
         var Healer = Memory.population['healer']['total'] || 0;
+*/
         
-        
-        // number of upgraders
-        try{
-            var upgraders_needed = Memory.Upgraders_needed[cur_room];
-        }catch(Error){
-            console.log('errror in upgraders needed by room')
-            Memory.Upgraders_needed = {}
-        }
-        
-        if(upgraders_needed == undefined || Memory.T == 1){
-            
-            var harvest_cost = ecoAI.harvestCost(SpawnLoc);
-            
-            
-            // The number of feeders a room has. 
-            var remote_mines = {'Spawn4':4,'Spawn1':1,'Spawn3':2}
-            
-            
-            /*
-            try{
-                var remote_profit = ((1500 - harvest_cost)*remote_mines[currentSpawn.name])/4
-                console.log('remote mine income theoritical '+remote_profit+' from '+currentSpawn.name);
-                
-                Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 3000 + remote_profit - harvest_cost);remote_mines
-            }catch(TypeError){
-                Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 3000 - harvest_cost);
-            }*/
-            
-            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 3000 - harvest_cost);
+        var Harvesters = Memory.population['harvester']['room'][currentSpawn.room.name] ;
 
-            upgraders_needed = Memory.Upgraders_needed[cur_room];
-            
-            
-            
+        var Builders = Memory.population['builder']['room'][currentSpawn.room.name] ;
+
+        var Upgraders = Memory.population['upgrader']['room'][currentSpawn.room.name] ;
+
+        var Miners = Memory.population['miner']['room'][currentSpawn.room.name] ;
+        
+        var Collectors = Memory.population['collector']['room'][currentSpawn.room.name] ;
+
+        var Distributer = Memory.population['distributer']['room'][currentSpawn.room.name] ; 
+        
+        var Maintance = Memory.population['maintance']['room'][currentSpawn.room.name] ; 
+
+        var Trucks = Memory.population['truck']['station'][currentSpawn.room.name] ;
+        
+        var Linkers = Memory.population['linker']['room'][currentSpawn.room.name] ;
+
+        var Troops = Memory.population['trooper']['total'] ;
+
+        var Raider = Memory.population['raider']['total'] ;
+
+        var Healer = Memory.population['healer']['total'] ;
+
+        if (Troops < Memory.troops_needed){
+            var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,RANGED_ATTACK,RANGED_ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
         }
-        
-        
-        
-        
         
         // Emergency spawn code begins
-
-        if (Game.spawns[spawn].room.controller.ticksToDowngrade <4900 && currentSpawn.canCreateCreep(upgraderBody) != OK && Upgraders < 1){
+        
+        // Spawn a upgrader if the controller looks like its on its way to downgrading.
+        if (currentSpawn.room.controller.ticksToDowngrade <4900 && currentSpawn.canCreateCreep(upgraderBody) != OK && Upgraders < 1){
             var name = currentSpawn.createCreep([WORK,CARRY,MOVE],"Eupgrader"+Memory.N,{'role':'upgrader','emergency':true});
             console.log('Emergency spawning upgrader ' + currentSpawn.name)
         }
@@ -193,16 +192,8 @@ var spawnControl = {
             console.log('Emergency spawning harvester ' + currentSpawn.name)
         }
         
+        
         // Emergency spawn code ends
-        
-        
-        if (Raider < 0){
-            var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK],"Raider"+Memory.N,{'role':'raider','rally_flag':'troops','AttackStruct':true});
-        
-        }
-        if (Troops < Memory.troops_needed){
-            var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,RANGED_ATTACK,RANGED_ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
-        } 
         
         var extractors = cur_room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_EXTRACTOR});
         
@@ -257,46 +248,70 @@ var spawnControl = {
                 console.log(""+spawn+" "+name);
                 Memory.N = Memory.N +1;
         }
-
+        
+        //spawnControl.spawnNew(currentSpawn,[WORK,MOVE,CARRY],1,"Eharvester"+Memory.N,{'role':'harvester','emergency':true})
+        
+        //spawnControl.getPopByRoom('truck',currentSpawn.room.name)
     },
     
-    // Function that handles spawning of creeps
-    spawnNew:function(currentSpawn,body,name,new_creep_memory){
-        if(currentSpawn.structureType != STRUCTURE_SPAWN){
-            return 'Invalid spawn'
-        }
-        else{
-            
-            if(currentSpawn.spawning == null){
-                var mem = {
-                'role':initial_memory['role'],
-                'created':time.tick(),
-                'spawnedAt':currentSpawn.name,
-                'station':initial_memory['station'],
-                }
-                
-                return currentSpawn.createCreep(body,name,mem)
-                Memory.N += 1
-                
-            }
-            
-            else{
-                return 'spawning '+currentSpawn.spawning.name
-            }
-            
-            
-            
 
+    
+    getPopByRoom:function(role,roomName){
+    
+        var pop_role = Memory.population[role]
+        if(pop_role){
+            var roomNum = pop_role['room']
+            if(roomNum){
+                roomNum = roomNum[roomName]
+                if(roomNum == undefined){
+                    console.log('none in room')
+                    return 0
+                }else{
+                    return roomNum
+                }
+            } else{
+                console.log('Room not a attribute of role '+pop_role)
+                return 0
+            }
+        }else{
+            console.log('Role not in population '+role)
+            return 0
         }
         
+    },
+    
+    
+    // Function that handles spawning of creeps
+    spawnNew:function(spawnObject,desired,body,name,memObject){
+        
+        var creep_role = memObject['role'];
+        
+        var rName = spawnObject.room.name;
+        
+        var cur_local_pop = spawnControl.getPopByRoom(creep_role,rName)
+        
+        if(desired <= cur_local_pop){
+            
+        }
+        
+        else if(spawnObject.spawning == null){
+            
+            for (var key in memObject) {
+                console.log(key, memObject[key]);
+            }
+
+        }
+            
+        else{
+            console.log('spawning '+spawnObject.spawning.name)
+        }
+
     },
     
     // Send miners trucks and claimers to a given room to mine it and return resorces to the base that spawned them.
     remote_source_mine:function(RoomName,SpawnLoc,NumTrucks,numMiners,numClaimers,claim = false){
         
-        // Energy available for spawning 
-        var room_development = SpawnLoc.room.energyCapacityAvailable;
-        
+        // transport body
         var transport_body = bodyBuilder.largest_transport(SpawnLoc)
         
         // Miner body

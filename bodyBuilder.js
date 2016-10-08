@@ -84,13 +84,17 @@ var bodyBuilder = {
         return miner_body.sort()
     },
     // Largest upgrader, if roads is false then it needs a move part per each other part
-    largest_upgrader:function(SpawnLoc,roads = true){
+    largest_upgrader:function(SpawnLoc,roads = true,budget = 2000){
+        
+        var max_work_parts = Math.ceil(budget/300)
         
         var cur_room = SpawnLoc.room;
         
         var room_development = cur_room.energyCapacityAvailable;
         
         var upgrader_body = new Array(CARRY,MOVE);
+        
+        var expected_travel = ecoAI.upgradeDistance(cur_room.name)
         
         var cost_of_upgrader = ecoAI.bodyCost(upgrader_body);
         
@@ -103,7 +107,7 @@ var bodyBuilder = {
         var work_parts = 0;
         
         
-        while(cost_of_upgrader < room_development - 100){
+        while(cost_of_upgrader < room_development - 100 && work_parts < max_work_parts){
             
             if(Fatigue > 0){
                 upgrader_body.push(MOVE);
@@ -111,8 +115,9 @@ var bodyBuilder = {
                 Fatigue = Fatigue -2;
             }
             else{
-                // Every 4th work part add a carry part instead of a work part
-                if (work_parts == 4){
+                // Every 4th work part add a carry part instead of a work part && If the upgrader never has to move (useing the ecoAI.upgradeDistance function) dont add carry parts
+                
+                if (work_parts == 4 && expected_travel > 0){
                     work_parts = 0;
                     upgrader_body.push(CARRY);
                 

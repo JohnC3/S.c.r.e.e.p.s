@@ -18,7 +18,7 @@ var ecoAI = {
         
         
         // By default creeps live for only 1500 ticks.      
-        var life_span = 1500;
+        var life_span = 1500 ;
 
         var body_cost = ecoAI.bodyCost(upgrader_body);
         
@@ -84,10 +84,40 @@ var ecoAI = {
         +'upgraders_needed '+upgraders_needed+'\n'
         +'energy_efficency '+energy_efficency+'\n')
         
-        return upgraders_needed,creep_overspend
+        return upgraders_needed
+    },
+
+    // 
+    capUpgraderParts:function(SpawnLoc, budget = 2000 , income_per_300 = 3000){
+        
+        roomName = SpawnLoc.room.name;
+        
+        // The current upgraderbody
+        
+        var cur_upgraderbody = Memory.creepBody[roomName]['upgrader']
+        
+        // Work parts within that body
+        
+        // By default creeps live for only 1500 ticks and it uses most of them in transit.      
+        var life_span = 1500 - ecoAI.upgradeDistance(roomName,invert_overide = true);
+        
+        var workParts = _.filter(cur_upgraderbody,function(p){return p == WORK}).length
+        
+        // Energy into upgrades per life
+        var energy_throughput = life_span*workParts
+        
+        // Energy alotted in budget each source can give a max of 10 energy per tick or 3000/ 300 so any budget divided by 300 
+        var energy_allotted = (budget/300) * life_span
+        
+        
+        var max_work_parts = (budget/300)
+        console.log(max_work_parts)
+        
+        
+        return max_work_parts
     },
     // Compute the distance between the controller and the storage (or spawn if no storage is available)
-    upgradeDistance:function(roomName){
+    upgradeDistance:function(roomName,invert_overide = false){
         // Step one find a path
         var base = Game.rooms[roomName];
 
@@ -101,8 +131,8 @@ var ecoAI = {
                 var spawn = base.find(FIND_STRUCTURES,{filter: s => s.structureType == STRUCTURE_SPAWN})[0];
                 var path = base.findPath(spawn.pos,base.controller.pos)
             }
-            // If a link is being used use it instead.
-            if(base.memory.invert){
+            // If a link is being used use it instead. But let invert overide overide this choice
+            if(base.memory.invert && invert_overide == false){
                 var link = base.controller.pos.findInRange(FIND_MY_STRUCTURES, 6,{filter: {structureType: STRUCTURE_LINK}})[0];
                 var path = base.findPath(link.pos,base.controller.pos)
             }
