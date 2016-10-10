@@ -26,6 +26,11 @@ var roleCollector = {
             }
         }
         else{
+            if(total == 0){
+                creep.memory.gathering = true;
+            }
+            
+            
             if(creep.pos.inRangeTo(creep.room.storage.pos,1)){
                 for(var resourceType in creep.carry) {
                     creep.transfer(creep.room.storage, resourceType)
