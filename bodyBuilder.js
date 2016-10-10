@@ -28,7 +28,7 @@ var bodyBuilder = {
     },
     
     // Build the largest transport the room can.
-    largest_transport:function(SpawnLoc){
+    largest_transport:function(SpawnLoc,cap = 600){
         
         var room_development = SpawnLoc.room.energyCapacityAvailable;
         
@@ -38,7 +38,7 @@ var bodyBuilder = {
         
         var cost_of_transport = ecoAI.bodyCost(transport_body);
         
-        while(cost_of_transport < Math.min(room_development -50,600)){
+        while(cost_of_transport < Math.min(room_development -50,cap)){
             if(flip){
                 transport_body.push(CARRY);
                 cost_of_transport += 50;
@@ -146,9 +146,9 @@ var bodyBuilder = {
                 Fatigue = Fatigue -2;
             }
         }
-        console.log(upgrader_body.sort())
-        console.log('cost '+ecoAI.bodyCost(upgrader_body))
-        console.log('capacity '+room_development)
+        console.log(upgrader_body.sort() +'\n'
+        +'cost '+ecoAI.bodyCost(upgrader_body) +'\n'
+        +'capacity '+room_development)
         return upgrader_body.sort();
 
     },
