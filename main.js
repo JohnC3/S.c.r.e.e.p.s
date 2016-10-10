@@ -42,7 +42,24 @@ module.exports.loop = function () {
     
     // Delete dead creeps from memory
     for(var i in Memory.creeps) {
+        
+
+        
         if(!Game.creeps[i]) {
+            
+            // get the memory of the dead creep.
+            var dead_creep = Memory.creeps[i]
+            // For each creep that you delete record its details!
+            if(dead_creep['role'] == 'miner'){
+                Memory.miner_efficency.push({'name':i,'station':dead_creep['station'],'energy_harvested':dead_creep['energy_harvested']})
+            }
+            else if(dead_creep['role'] == 'truck'){
+                Memory.truck_efficency.push({'name':i,'station':dead_creep['station'],'drop_location':dead_creep['drop_location'],'energy_taken':dead_creep['energy_pickedup'],'energy_delivered':dead_creep['energy_delivered']})
+            }
+            
+            
+            
+            
             delete Memory.creeps[i];
         }
 
@@ -73,6 +90,7 @@ module.exports.loop = function () {
     
     var all_existing_roles = Object.keys(creep_type);
     
+    // Build the memory structure containing the population data. 
     for (var i in all_existing_roles){
         
         var r = all_existing_roles[i];
@@ -81,37 +99,85 @@ module.exports.loop = function () {
             r_name = Memory.recorded_rooms[recorded_room];
             Memory.population[r]['station'][r_name] = 0;
             Memory.population[r]['room'][r_name] = 0;
+            
+            // Lowest ticks to live will also be recorded.
+            Memory.population[r]['station']['TTL'+r_name] = 1500;
+            Memory.population[r]['room']['TTL'+r_name] = 1500;
+            
+            
         }
-        
-        
     }
     
-    // Loop that lists a creep name and role for every creep.
+    // Loop that incraments the values in the population info.
     for(var name in Game.creeps) {
-
+        
         var creep = Game.creeps[name];
-
+        
+        // The role of the given creep.
+        var cRole = creep.memory.role;
+        
+        // The station of the creep as set in the creeps memory
+        var cStation = creep.memory.station;
+        
+        // The room the creep happens to be in.
+        var cRoom = creep.room.name;
+        
+        // Incrament the total count of creeps of that role
+        Memory.population[cRole]['total'] += 1;
+        
+        
+        // Incrament the number of creeps stationed in said room.
+        Memory.population[cRole]['station'][cStation] += 1;
+        
+        Memory.population[cRole]['station']['TTL'+cStation] = Math.min(Memory.population[cRole]['station']['TTL'+cStation],creep.ticksToLive);
+        
+        // Incrament the number of creeps who just are in the room
+        Memory.population[cRole]['room'][cRoom] += 1;
+        
+        Memory.population[cRole]['room']['TTL'+cRoom] = Math.min(Memory.population[cRole]['room']['TTL'+cRoom],creep.ticksToLive);
+        
+        /*
+        ['station'][creep.memory.station] += 1;
+        
         // Manage population numbers
-        if(Memory.population[creep.memory.role] == null || Memory.population[creep.memory.role] == undefined){
-            Memory.population[creep.memory.role] = {'total':0,'station':{},'room':{}}
-        }
+        //if(Memory.population[creep.memory.role] == null || Memory.population[creep.memory.role] == undefined){
+        //    Memory.population[creep.memory.role] = {'total':0,'station':{},'room':{}}
+        //}
         Memory.population[creep.memory.role]['total'] += 1;
+
         
         // What room is it stationed in? If it has a add that station to the dictionary then add the creep station add it to said station.
-        if (creep.memory.station != undefined){
-            if(Memory.population[creep.memory.role]['station'][creep.memory.station] == null || Memory.population[creep.memory.role]['station'][creep.memory.station]  == undefined ){
-                Memory.population[creep.memory.role]['station'][creep.memory.station] = 0;
-            }
-        }
+        //if (creep.memory.station != undefined){
+        //    if(Memory.population[creep.memory.role]['station'][creep.memory.station] == null || Memory.population[creep.memory.role]['station'][creep.memory.station]  == undefined ){
+        //        Memory.population[creep.memory.role]['station'][creep.memory.station] = 0;
+        //    }
+        //}
         Memory.population[creep.memory.role]['station'][creep.memory.station] += 1;
         
-        // What room is it currently in?
-        if(Memory.population[creep.memory.role]['room'][creep.room.name] == null || Memory.population[creep.memory.role]['room'][creep.room.name]  == undefined ){
-            Memory.population[creep.memory.role]['room'][creep.room.name] = 0;
+        
+        if(creep.ticksToLive < Memory.population[r]['station']['TTL'+creep.memory.station]){
+            Memory.population[r]['station']['TTL'+creep.memory.station] = creep.ticksToLive
         }
+        
 
-
+        
+        // What room is it currently in?
+        //if(Memory.population[creep.memory.role]['room'][creep.room.name] == null || Memory.population[creep.memory.role]['room'][creep.room.name]  == undefined ){
+        //    Memory.population[creep.memory.role]['room'][creep.room.name] = 0;
+        //}
+        
         Memory.population[creep.memory.role]['room'][creep.room.name] += 1;
+
+        if(Memory.population[r]['room']['TTL'+creep.room.name] > creep.ticksToLive){
+            console.log(creep.ticksToLive)
+            
+            Memory.population[r]['room']['TTL'+creep.room.name] = creep.ticksToLive
+            console.log(Memory.population[r]['room']['TTL'+creep.room.name])
+        }
+        */
+    }
+    
+    for(var name in Game.creeps){
 
         var creep = Game.creeps[name];
  
@@ -133,7 +199,8 @@ module.exports.loop = function () {
     // Set up remote mining operations.
     spawnControl.remote_source_mine("W53S32",Game.spawns.Spawn3,2,1,1);
     spawnControl.remote_source_mine("W54S33",Game.spawns.Spawn3,2,1,1);
-    spawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,2,1,1);
+    //spawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,2,1,1);
+    spawnControl.dispatch_builders("W51S33",Game.spawns.Spawn1,numBuilders = 2,nunTrucks = 1,numMiners = 1);
     
     spawnControl.remote_source_mine("W51S34",Game.spawns.Spawn4,2,1,1);
     spawnControl.remote_source_mine("W52S35",Game.spawns.Spawn4,2,1,1);
