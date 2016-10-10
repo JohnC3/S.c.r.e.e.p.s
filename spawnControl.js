@@ -20,10 +20,6 @@ var spawnControl = {
         }
         spawnControl.economic(spawn);
         
-
-
-        
-        
     },
 
     
@@ -112,32 +108,6 @@ var spawnControl = {
             
         }
 
-/*
-        var Harvesters = Memory.population['harvester']['room'][currentSpawn.room.name] || 0;
-
-        var Builders = Memory.population['builder']['room'][currentSpawn.room.name] || 0;
-
-        var Upgraders = Memory.population['upgrader']['room'][currentSpawn.room.name] || 0;
-
-        var Miners = Memory.population['miner']['room'][currentSpawn.room.name] || 0;
-        
-        var Collectors = Memory.population['collector']['room'][currentSpawn.room.name] || 0;
-
-        var Distributer = Memory.population['distributer']['room'][currentSpawn.room.name] || 0; 
-        
-        var Maintance = Memory.population['maintance']['room'][currentSpawn.room.name] || 0; 
-
-        var Trucks = Memory.population['truck']['station'][currentSpawn.room.name] || 0;
-        
-        var Linkers = Memory.population['linker']['room'][currentSpawn.room.name] || 0;
-
-        var Troops = Memory.population['trooper']['total'] || 0;
-
-        var Raider = Memory.population['raider']['total'] || 0;
-
-        var Healer = Memory.population['healer']['total'] || 0;
-*/
-        
         var Harvesters = Memory.population['harvester']['room'][currentSpawn.room.name] ;
 
         var Builders = Memory.population['builder']['room'][currentSpawn.room.name] ;
@@ -157,10 +127,6 @@ var spawnControl = {
         var Linkers = Memory.population['linker']['room'][currentSpawn.room.name] ;
 
         var Troops = Memory.population['trooper']['total'] ;
-
-        var Raider = Memory.population['raider']['total'] ;
-
-        var Healer = Memory.population['healer']['total'] ;
 
         if (Troops < Memory.troops_needed){
             var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,RANGED_ATTACK,RANGED_ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
@@ -251,61 +217,54 @@ var spawnControl = {
         
         //spawnControl.spawnNew(currentSpawn,[WORK,MOVE,CARRY],1,"Eharvester"+Memory.N,{'role':'harvester','emergency':true})
         
-        //spawnControl.getPopByRoom('truck',currentSpawn.room.name)
     },
-    
-
-    
-    getPopByRoom:function(role,roomName){
-    
-        var pop_role = Memory.population[role]
-        if(pop_role){
-            var roomNum = pop_role['room']
-            if(roomNum){
-                roomNum = roomNum[roomName]
-                if(roomNum == undefined){
-                    console.log('none in room')
-                    return 0
-                }else{
-                    return roomNum
-                }
-            } else{
-                console.log('Room not a attribute of role '+pop_role)
-                return 0
-            }
-        }else{
-            console.log('Role not in population '+role)
-            return 0
-        }
-        
-    },
-    
     
     // Function that handles spawning of creeps
-    spawnNew:function(spawnObject,desired,body,name,memObject){
+    spawnNew:function(spawnObject,desired,body,name,memObject,byStation = true,ttl = body.length*3){
+        
+        // ttl is the number of ticks a new creep will take to replace the old one.
         
         var creep_role = memObject['role'];
         
         var rName = spawnObject.room.name;
         
-        var cur_local_pop = spawnControl.getPopByRoom(creep_role,rName)
-        
-        if(desired <= cur_local_pop){
+        // How many creeps are either stationed or in the room.
+        if(byStation){
+            var cur_local_pop = Memory.population[creep_role]['station'][rName];
             
-        }
-        
-        else if(spawnObject.spawning == null){
-            
-            for (var key in memObject) {
-                console.log(key, memObject[key]);
+            // Lowest time to live among the creeps stationed in that room
+            if(Memory.population[creep_role]['station'][rName+'TTL'] < ttl){
+                cur_local_pop = cur_local_pop - 1;
             }
-
-        }
             
-        else{
-            console.log('spawning '+spawnObject.spawning.name)
+        }else{
+            var cur_local_pop = Memory.population[creep_role]['room'][rName];
+            
+            // Lowest time to live among the creeps stationed in that room
+            if(Memory.population[creep_role]['room'][rName+'TTL'] < ttl){
+                cur_local_pop = cur_local_pop - 1;
+            }
         }
+        console.log(memObject)
+        
+        var extended = memObject;
+        
+        extended['spawn'] = spawnObject.name;
+        
+        console.log(extended)
+        
+        // Spawn if needed
+        if(desired < cur_local_pop){
+            
+            var name = spawnObject.createCreep(body,name+Memory.N,extended);
+            
+            return name
+            
+        }
+        
 
+        
+        
     },
     
     // Send miners trucks and claimers to a given room to mine it and return resorces to the base that spawned them.
@@ -320,11 +279,23 @@ var spawnControl = {
         var work_parts_in_miner = _.filter(miner_body,p => p == WORK).length;
         
         // Create miners until their are at least 5 WORK parts per source.
-        var Miners = Memory.population['miner']['station'][RoomName] || 0;
-
-        var transports = Memory.population['truck']['station'][RoomName] || 0;
+        var Miners = Memory.population['miner']['station'][RoomName]
         
-        var claimers = Memory.population['claimer']['station'][RoomName] || 0 
+        if(Memory.population['miner']['station'][RoomName+'TTL'] < 100){
+            Miners = Miners - 1;
+        }
+        
+        var transports = Memory.population['truck']['station'][RoomName]
+        
+        if(Memory.population['truck']['station'][RoomName+'TTL'] < 100){
+            transports = transports - 1;
+        }
+        
+        var claimers = Memory.population['claimer']['station'][RoomName] 
+        
+        if(Memory.population['claimer']['station'][RoomName+'TTL'] < 100){
+            claimers = claimers - 1;
+        }
         
         if(Miners*work_parts_in_miner < numMiners*5 && Miners < 6){
             var name = SpawnLoc.createCreep(miner_body,'RemoteMiner'+Memory.N,{'role':'miner','station':RoomName});
@@ -350,24 +321,32 @@ var spawnControl = {
     },
     
     // Dispatch builders to another room, along with trucks to dropoff energy in said room.
-    dispatch_builders:function(RoomName,SpawnLoc,NumTrucks,numBuilders){
+    dispatch_builders:function(RoomName,SpawnLoc,NumTrucks,numBuilders,numMiners = 1){
         
         var cur_room = SpawnLoc.room;
         
-        var builders = Memory.population['builder']['station'][RoomName] || 0;
+        var builders = Memory.population['builder']['station'][RoomName];
         
-        var workerBody = bodyBuilder.largest_worker(SpawnLoc)
+        
         
         if(builders < numBuilders){
-            var name = currentSpawn.createCreep(workerBody,"builder"+Memory.N,{'role':'builder','station':RoomName});
+            var workerBody = bodyBuilder.largest_worker(SpawnLoc)
+            var name = SpawnLoc.createCreep(workerBody,"builder"+Memory.N,{'role':'builder','station':RoomName});
         }
         
-        var trucks = _.filter(Game.creeps, (c)=>c.memory.role == 'truck' && c.memory.station == cur_room.name && c.memory.droplocation == RoomName).length || 0;
-        
-        var transport_body = bodyBuilder.largest_transport(SpawnLoc)
+        var trucks = Memory.population['truck']['station'][RoomName]
         
         if(trucks < NumTrucks){
-            var name = currentSpawn.createCreep(transport_body,"Hauler"+Memory.N,{'role':'builder','station':cur_room.name,'droplocation':RoomName});
+            var transport_body = bodyBuilder.largest_transport(SpawnLoc)
+            var name = SpawnLoc.createCreep(transport_body,"Hauler"+Memory.N,{'role':'truck','station':RoomName,'droplocation':RoomName});
+        }
+        
+        var Miners = Memory.population['miner']['station'][RoomName]
+        
+        if(Miners < numMiners){
+            var miner_body = bodyBuilder.largest_miner(SpawnLoc)
+            var name = SpawnLoc.createCreep(miner_body,'RemoteMiner'+Memory.N,{'role':'miner','station':RoomName});
+
         }
         
         if (name != -4 && name != -6 && name != undefined){
