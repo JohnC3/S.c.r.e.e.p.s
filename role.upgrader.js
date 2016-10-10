@@ -12,11 +12,6 @@ var roleUpgrader = {
         }
         
         else{
-            
-        
-        
-        
-        
             // todo:: Add a if else wrapper to this that blocks pickup attempts if a unsafe flag appears.
             if( creep.memory.action == 'dropoff'){
     

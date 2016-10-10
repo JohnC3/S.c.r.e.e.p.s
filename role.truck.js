@@ -13,6 +13,14 @@ var roleTruck = {
             
         }
         
+        if(creep.memory.energy_delivered == undefined){
+            creep.memory.energy_delivered = 0;
+        }
+        
+        if(creep.memory.energy_pickedup == undefined){
+            creep.memory.energy_pickedup = 0;
+        }
+        
         if(creep.memory.droplocation == undefined){
             creep.memory.droplocation = creep.room.name;
         }
@@ -36,6 +44,8 @@ var roleTruck = {
             if(_.sum(creep.carry) == creep.carryCapacity){
                 creep.memory.gathering = false;
                 creep.memory.pickupPoint = undefined;
+                
+                creep.memory.energy_pickedup += creep.carryCapacity;
             }
         }
         // If you are not picking up energy drop it off.
@@ -62,6 +72,7 @@ var roleTruck = {
                         for(var resourceType in creep.carry) {
                             creep.transfer(closest_dropoff, resourceType)
                         }
+                        creep.memory.energy_delivered += creep.carryCapacity;
                     } else{
                         creep.moveTo(closest_dropoff);
                     }
@@ -79,6 +90,7 @@ var roleTruck = {
                     // If the harvester is now empty it should pickup more energy
                     else if(creep.carry.energy == 0){
                         creep.memory.gathering = true;
+                        creep.memory.energy_delivered += creep.carryCapacity
                     }
                 }
                 // If such a place exists go and transfer to it.
@@ -94,6 +106,7 @@ var roleTruck = {
                     // If the harvester is now empty it should pickup more energy
                     else if(_.sum(creep.carry) == 0){
                         creep.memory.gathering = true;
+                        creep.memory.energy_delivered += creep.carryCapacity
                     }
                 }
 

@@ -111,9 +111,7 @@ var ecoAI = {
         
         
         var max_work_parts = (budget/300)
-        console.log(max_work_parts)
-        
-        
+
         return max_work_parts
     },
     // Compute the distance between the controller and the storage (or spawn if no storage is available)

@@ -84,8 +84,7 @@ var roleMiner = {
             }
             
             var target = Game.getObjectById(creep.memory.currSource);
-            //creep.say(target)
-            //creep.say(creep.harvest(target))
+
             if (creep.harvest(target) == ERR_NOT_IN_RANGE) {
                 
                 creep.moveTo(target);
@@ -93,9 +92,10 @@ var roleMiner = {
             
             if (creep.carry.energy == creep.carryCapacity) {
                 
-                // Two cases depending on if a miner is remote or not.
-                
-                
+                // Every time you fill up count how much energy is harvested.
+                creep.memory.energy_harvested += creep.carryCapacity;
+
+                // Creeps set to remote mode (ie creeps mining in other rooms.)
                 if(creep.memory.remote){
                     roleMiner.remote(creep);
                     
@@ -117,7 +117,6 @@ var roleMiner = {
     	            }
     	            
     	            else {
-                        creep.memory.energy_harvested += creep.carryCapacity;
     	                creep.drop(RESOURCE_ENERGY);
     	            }
                 }
