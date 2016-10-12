@@ -11,8 +11,9 @@ var roleClaim = require('role.claim');
 var roleHealer = require('role.healer');
 var roleCollector = require('role.collector');
 var roleCivilian = require('role.civilian');
-
+var spawnCommands = require('spawn.commands')
 var spawnControl = require('spawnControl');
+
 var roleMaintance = require('role.maintance');
 var tower = require('towerControl');
 var linkControl = require('linkControl');
@@ -176,15 +177,15 @@ module.exports.loop = function () {
     }
     
     // Set up remote mining operations.
-    spawnControl.remote_source_mine("W53S32",Game.spawns.Spawn3,2,1,1);
-    spawnControl.remote_source_mine("W54S33",Game.spawns.Spawn3,2,1,1);
-    //spawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,2,1,1);
-    spawnControl.dispatch_builders("W51S33",Game.spawns.Spawn1,numBuilders = 1,nunTrucks = 0,numMiners = 0);
+    spawnCommands.remote_source_mine("W53S32",Game.spawns.Spawn3,2,1,1);
+    spawnCommands.remote_source_mine("W54S33",Game.spawns.Spawn3,2,1,1);
+    //spawnCommands.remote_source_mine("W51S33",Game.spawns.Spawn1,2,1,1);
+    spawnCommands.dispatch_builders("W51S33",Game.spawns.Spawn1,numBuilders = 1,nunTrucks = 0,numMiners = 0);
     
-    spawnControl.remote_source_mine("W51S34",Game.spawns.Spawn4,2,1,1);
-    spawnControl.remote_source_mine("W52S35",Game.spawns.Spawn4,2,1,1);
-    spawnControl.remote_source_mine("W53S34",Game.spawns.Spawn4,2,1,1);
-    spawnControl.remote_source_mine("W53S35",Game.spawns.Spawn4,2,1,1);
+    spawnCommands.remote_source_mine("W51S34",Game.spawns.Spawn4,2,1,1);
+    spawnCommands.remote_source_mine("W52S35",Game.spawns.Spawn4,2,1,1);
+    spawnCommands.remote_source_mine("W53S34",Game.spawns.Spawn4,2,1,1);
+    spawnCommands.remote_source_mine("W53S35",Game.spawns.Spawn4,2,1,1);
     
     for(s in Game.spawns){
 
