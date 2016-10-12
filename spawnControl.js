@@ -51,6 +51,10 @@ var spawnControl = {
 
         var cur_room = currentSpawn.room;
         
+        if(Memory.myDomain.indexOf(cur_room.name) == -1){
+            Memory.myDomain.push(cur_room.name)
+        }
+        
         var num_sources = currentSpawn.room.find(FIND_SOURCES).length;
         
         var num_links = currentSpawn.room.find(FIND_STRUCTURES, {filter : s => s.structureType == STRUCTURE_LINK} ).length;
@@ -68,6 +72,8 @@ var spawnControl = {
             var upgraderBody = Memory.creepBody[SpawnLoc.room.name]['upgrader'];
             
             var workerBody = Memory.creepBody[SpawnLoc.room.name]['worker'];
+            
+            var collectorBody = Memory.creepBody[SpawnLoc.room.name]['collector'];
         }catch(TypeError){
             bodyBuilder.run(currentSpawn);
             
@@ -78,6 +84,8 @@ var spawnControl = {
             var upgraderBody = Memory.creepBody[SpawnLoc.room.name]['upgrader'];
             
             var workerBody = Memory.creepBody[SpawnLoc.room.name]['worker'];
+            
+            var collectorBody = Memory.creepBody[SpawnLoc.room.name]['collector'];
         }
 
         
@@ -100,7 +108,9 @@ var spawnControl = {
             
             ecoAI.capUpgraderParts(SpawnLoc)
             
-            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = 2000 - harvest_cost);
+            var budget_by_room = {'W53S33':4000,'W52S33':3400,'W51S33':1500,'W52S34':1800}
+            
+            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = budget_by_room[cur_room.name] - harvest_cost);
 
             upgraders_needed = Memory.Upgraders_needed[cur_room];
             
@@ -125,12 +135,18 @@ var spawnControl = {
         var Trucks = Memory.population['truck']['station'][currentSpawn.room.name] ;
         
         var Linkers = Memory.population['linker']['room'][currentSpawn.room.name] ;
+        
+        var Scouts = Memory.population['civilian']['room'][currentSpawn.room.name] ;
 
         var Troops = Memory.population['trooper']['total'] ;
 
         if (Troops < Memory.troops_needed){
             var name = currentSpawn.createCreep([MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,RANGED_ATTACK,RANGED_ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
         }
+        
+        
+        //spawnControl.spawnNew(currentSpawn,4,[MOVE],cName ='Scout',{'role':'civilian','station':'W54S34'},byStation = true,ttl = 2)
+        
         
         // Emergency spawn code begins
         
@@ -163,9 +179,13 @@ var spawnControl = {
         
         var extractors = cur_room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_EXTRACTOR});
         
+        var minerals = cur_room.find(FIND_MINERALS,{filter: m => m.mineralAmount > 0})
         
-        if(Collectors < 1 && extractors.length > 0){
-            var name = currentSpawn.createCreep(workerBody,"Collector"+Memory.N,{'role':'collector'});
+        //console.log(cur_room.name +' '+ minerals.length)
+        
+        
+        if(Collectors < 1 && extractors.length > 0 && minerals.length > 0){
+            var name = currentSpawn.createCreep(collectorBody,"Collector"+Memory.N,{'role':'collector'});
         }
         
         var construction_sites = cur_room.find(FIND_CONSTRUCTION_SITES)
@@ -220,7 +240,7 @@ var spawnControl = {
     },
     
     // Function that handles spawning of creeps
-    spawnNew:function(spawnObject,desired,body,name,memObject,byStation = true,ttl = body.length*3){
+    spawnNew:function(spawnObject,desired,body,cName,memObject,byStation = true,ttl = body.length*3){
         
         // ttl is the number of ticks a new creep will take to replace the old one.
         
@@ -230,46 +250,42 @@ var spawnControl = {
         
         // How many creeps are either stationed or in the room.
         if(byStation){
-            var cur_local_pop = Memory.population[creep_role]['station'][rName];
+            var pop = Memory.population[creep_role]['station'][rName];
             
             // Lowest time to live among the creeps stationed in that room
             if(Memory.population[creep_role]['station'][rName+'TTL'] < ttl){
-                cur_local_pop = cur_local_pop - 1;
+                pop = pop - 1;
             }
             
         }else{
-            var cur_local_pop = Memory.population[creep_role]['room'][rName];
+            var pop = Memory.population[creep_role]['room'][rName];
             
             // Lowest time to live among the creeps stationed in that room
             if(Memory.population[creep_role]['room'][rName+'TTL'] < ttl){
-                cur_local_pop = cur_local_pop - 1;
+                pop = pop - 1;
             }
         }
-        console.log(memObject)
-        
+
         var extended = memObject;
         
         extended['spawn'] = spawnObject.name;
         
-        console.log(extended)
-        
-        // Spawn if needed
-        if(desired < cur_local_pop){
-            
-            var name = spawnObject.createCreep(body,name+Memory.N,extended);
-            
-            return name
-            
-        }
-        
 
-        
-        
+        if(pop < desired){
+            var name = spawnObject.createCreep(body,cName+Memory.N,extended);
+        }
+        if (name != -4 && name != -6 && name != undefined){
+                console.log(""+spawnObject.name+" "+name);
+                Memory.N = Memory.N +1;
+        }
     },
     
     // Send miners trucks and claimers to a given room to mine it and return resorces to the base that spawned them.
     remote_source_mine:function(RoomName,SpawnLoc,NumTrucks,numMiners,numClaimers,claim = false){
-        
+
+        if(Memory.myDomain.indexOf(RoomName) == -1){
+            Memory.myDomain.push(RoomName)
+        }
         // transport body
         var transport_body = bodyBuilder.largest_transport(SpawnLoc)
         
@@ -322,6 +338,10 @@ var spawnControl = {
     
     // Dispatch builders to another room, along with trucks to dropoff energy in said room.
     dispatch_builders:function(RoomName,SpawnLoc,NumTrucks,numBuilders,numMiners = 1){
+        
+        if(Memory.myDomain.indexOf(RoomName) == -1){
+            Memory.myDomain.push(RoomName)
+        }
         
         var cur_room = SpawnLoc.room;
         

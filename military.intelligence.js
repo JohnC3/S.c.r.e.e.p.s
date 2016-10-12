@@ -29,7 +29,10 @@ var intel = {
             
             var enemy_creeps = current_room.find(FIND_HOSTILE_CREEPS);
             
-            if(enemy_creeps.length > 0){
+            if(enemy_creeps.length > 0 && Memory.myDomain.indexOf(r) > 0){
+                
+                //  If a room has enemy creeps it is not safe.
+                Memory.safety[current_room] = false;
                 
                 total_enemy_creeps += enemy_creeps.length;
                 
@@ -70,6 +73,11 @@ var intel = {
                 intel.safeModeTest(current_room);
 
             }
+            // Set safety to true if the room has no enemies.
+            if(enemy_creeps == 0){
+                Memory.safety[current_room] = true;
+            }
+            
         }
 
         if(attacks_in_progress > 0){
@@ -119,20 +127,24 @@ var intel = {
     // Activate safe mode if needed.
     safeModeTest:function(curRoom){
         
-        // If this is a owned room
-        if(curRoom.controller.owner){
-            // See if any of the functional parts (towers,spawns,extensions,etc) basically eveything but roads, walls, ramparts and containers
-            var damaged_important_structures = curRoom.find(FIND_MY_STRUCTURES,{filter: s => 
-                (s.hits < s.hitsMax) &&
-                (s.structureType != STRUCTURE_CONTAINER ||
-                s.structureType != STRUCTURE_WALL ||
-                s.structureType != STRUCTURE_ROAD ||
-                s.structureType != STRUCTURE_RAMPART)
-            })
-            if(damaged_important_structures.length > 0){
-                curRoom.controller.activateSafeMode();
+        if(Game.rooms.curRoom){
+            // If this is a owned room
+            if(curRoom.controller.owner){
+                // See if any of the functional parts (towers,spawns,extensions,etc) basically eveything but roads, walls, ramparts and containers
+                var damaged_important_structures = curRoom.find(FIND_MY_STRUCTURES,{filter: s => 
+                    (s.hits < s.hitsMax) &&
+                    (s.structureType != STRUCTURE_CONTAINER ||
+                    s.structureType != STRUCTURE_WALL ||
+                    s.structureType != STRUCTURE_ROAD ||
+                    s.structureType != STRUCTURE_RAMPART)
+                })
+                if(damaged_important_structures.length > 0){
+                    curRoom.controller.activateSafeMode();
+                }
             }
         }
+        
+
     },
     
 

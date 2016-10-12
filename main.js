@@ -10,24 +10,39 @@ var roleTruck = require('role.truck');
 var roleClaim = require('role.claim');
 var roleHealer = require('role.healer');
 var roleCollector = require('role.collector');
+var roleCivilian = require('role.civilian');
+
 var spawnControl = require('spawnControl');
-var roleMaintance = require('role.maintance')
-var tower = require('towerControl')
-var linkControl = require('linkControl')
-var intel = require('military.intelligence')
+var roleMaintance = require('role.maintance');
+var tower = require('towerControl');
+var linkControl = require('linkControl');
+var intel = require('military.intelligence');
+
+
+
+
+/*
+RoomObject.prototype.hello = function() { console.log(hello);};
+
+For example, I have a prototype that merges `creep.harvest`, `creep.transfer` and `creep.withdraw` all into a single `creep.pull` module
+
+[7:55]  
+So my creeps can pull energy from whatever their target happens to be without a big unwieldy codeblock checking each stage
+
+https://gist.github.com/Puciek/641e5f89246958167774e384b65af7a6
+*/
 
 module.exports.loop = function () {
-    
-    
-    
-    
+
+
     intel.defense()
     
 
     // If a miner is an old miner create a replacement but keep working.
     // role to code used in role hash
     var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,'collector':roleCollector,
-    'truck':roleTruck,'trooper':roleTrooper,'knight':roleTrooper,'raider':roleTrooper,'healer':roleHealer,'distributer':roleDistributer,'linker':roleLinker,'maintance':roleMaintance};
+    'truck':roleTruck,'trooper':roleTrooper,'knight':roleTrooper,'raider':roleTrooper,'healer':roleHealer,'distributer':roleDistributer,'linker':roleLinker,
+    'maintance':roleMaintance,'civilian':roleCivilian};
     
     //
     if (Memory.N > 100 || Memory.N == undefined){
@@ -135,51 +150,12 @@ module.exports.loop = function () {
         Memory.population[cRole]['room'][cRoom] += 1;
         
         Memory.population[cRole]['room']['TTL'+cRoom] = Math.min(Memory.population[cRole]['room']['TTL'+cRoom],creep.ticksToLive);
-        
-        /*
-        ['station'][creep.memory.station] += 1;
-        
-        // Manage population numbers
-        //if(Memory.population[creep.memory.role] == null || Memory.population[creep.memory.role] == undefined){
-        //    Memory.population[creep.memory.role] = {'total':0,'station':{},'room':{}}
-        //}
-        Memory.population[creep.memory.role]['total'] += 1;
-
-        
-        // What room is it stationed in? If it has a add that station to the dictionary then add the creep station add it to said station.
-        //if (creep.memory.station != undefined){
-        //    if(Memory.population[creep.memory.role]['station'][creep.memory.station] == null || Memory.population[creep.memory.role]['station'][creep.memory.station]  == undefined ){
-        //        Memory.population[creep.memory.role]['station'][creep.memory.station] = 0;
-        //    }
-        //}
-        Memory.population[creep.memory.role]['station'][creep.memory.station] += 1;
-        
-        
-        if(creep.ticksToLive < Memory.population[r]['station']['TTL'+creep.memory.station]){
-            Memory.population[r]['station']['TTL'+creep.memory.station] = creep.ticksToLive
-        }
-        
-
-        
-        // What room is it currently in?
-        //if(Memory.population[creep.memory.role]['room'][creep.room.name] == null || Memory.population[creep.memory.role]['room'][creep.room.name]  == undefined ){
-        //    Memory.population[creep.memory.role]['room'][creep.room.name] = 0;
-        //}
-        
-        Memory.population[creep.memory.role]['room'][creep.room.name] += 1;
-
-        if(Memory.population[r]['room']['TTL'+creep.room.name] > creep.ticksToLive){
-            console.log(creep.ticksToLive)
-            
-            Memory.population[r]['room']['TTL'+creep.room.name] = creep.ticksToLive
-            console.log(Memory.population[r]['room']['TTL'+creep.room.name])
-        }
-        */
+      
     }
     
     for(var name in Game.creeps){
-
-        var creep = Game.creeps[name];
+        
+                var creep = Game.creeps[name];
  
         // If a creep is set to trace create a road at its location every tick.
         if(creep.memory.trace){
@@ -191,6 +167,9 @@ module.exports.loop = function () {
             Memory.miners.push(creep);
         }
         
+        if (creep.memory.role == undefined){
+            creep.suicide()
+        }
         
         creep_type[creep.memory.role].run(creep);
 
@@ -200,7 +179,7 @@ module.exports.loop = function () {
     spawnControl.remote_source_mine("W53S32",Game.spawns.Spawn3,2,1,1);
     spawnControl.remote_source_mine("W54S33",Game.spawns.Spawn3,2,1,1);
     //spawnControl.remote_source_mine("W51S33",Game.spawns.Spawn1,2,1,1);
-    spawnControl.dispatch_builders("W51S33",Game.spawns.Spawn1,numBuilders = 2,nunTrucks = 1,numMiners = 1);
+    spawnControl.dispatch_builders("W51S33",Game.spawns.Spawn1,numBuilders = 1,nunTrucks = 0,numMiners = 0);
     
     spawnControl.remote_source_mine("W51S34",Game.spawns.Spawn4,2,1,1);
     spawnControl.remote_source_mine("W52S35",Game.spawns.Spawn4,2,1,1);

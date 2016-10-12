@@ -22,7 +22,7 @@ var bodyBuilder = {
         
         Memory.creepBody[SpawnLoc.room.name]['worker'] = bodyBuilder.largest_worker(SpawnLoc)
         
-
+        Memory.creepBody[SpawnLoc.room.name]['collector'] = bodyBuilder.MineralCollector(SpawnLoc)
         
           
     },
@@ -207,8 +207,55 @@ var bodyBuilder = {
 
     },
     
-    
-    // Largest upgrader
+    // Largest worker/ maintainer/ builder
+    MineralCollector:function(SpawnLoc,roads = false,max_work_parts = 25){
+        
+        var cur_room = SpawnLoc.room;
+        
+        var room_development = cur_room.energyCapacityAvailable;
+        
+        var collector_body = new Array(CARRY,MOVE);
+        
+        var body_cost = ecoAI.bodyCost(collector_body);
+        
+        if(roads){
+            var Fatigue = -1;
+        } else{
+            var Fatigue = 0;
+        }
+        
+        var work_parts = 0;
+        
+        while(body_cost < room_development - 100 && work_parts < max_work_parts){
+            
+            if(Fatigue > 0){
+                collector_body.push(MOVE);
+                body_cost += 50;
+                Fatigue = Fatigue -2;
+            } else{
+                collector_body.push(WORK);
+                
+                body_cost += 100;
+                if(roads){
+                    Fatigue += 1;
+                } else{
+                    Fatigue += 2;
+                }
+                work_parts += 1;
+            }
+            
+            if(Fatigue > 0){
+                collector_body.push(MOVE);
+                body_cost += 50;
+                Fatigue = Fatigue -2;
+            }
+        }
+        console.log(collector_body.sort() +'\n'
+        +'cost '+ecoAI.bodyCost(body_cost) +'\n'
+        +'capacity '+room_development)
+        return collector_body.sort();
+
+    },
     largest_worker:function(SpawnLoc){
         
         

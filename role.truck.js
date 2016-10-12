@@ -183,6 +183,12 @@ var roleTruck = {
                 }
             }
         }
+    },
+    remoteMinePath:function(creep){
+        //if(creep.room.name == creep.memory.station){
+            //PathFinder.search(creep.memory.spawn, goal, [opts])
+        //}
+        
     }
 }
         

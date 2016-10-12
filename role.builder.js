@@ -2,6 +2,9 @@ var roleTruck = require('role.truck')
 
 var roleBuilder = {
     // Take from storeage to build instead of stupid.
+    
+    
+    
     run: function(creep) {
         if(creep.memory.station == undefined){
             creep.memory.station = creep.room.name;
@@ -108,16 +111,11 @@ var roleBuilder = {
 	            }
 	        } else {
 	            roleTruck.get_energy(creep,idleFlag = false)
-	            
-	            
-	            /*if (dropped_e.length > 0){
-	            var energy_pickup = creep.pos.findClosestByRange(dropped_e)
-	                if(creep.pickup(energy_pickup) == ERR_NOT_IN_RANGE){
-	                    creep.moveTo(energy_pickup);
-	                }
-	            }*/
+
 	        }
    	}
 };
 
 module.exports = roleBuilder;
+
+
