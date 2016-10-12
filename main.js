@@ -11,16 +11,14 @@ var roleClaim = require('role.claim');
 var roleHealer = require('role.healer');
 var roleCollector = require('role.collector');
 var roleCivilian = require('role.civilian');
-var spawnCommands = require('spawn.commands')
+
+var spawnCommands = require('spawn.commands');
 var spawnControl = require('spawnControl');
 
 var roleMaintance = require('role.maintance');
 var tower = require('towerControl');
 var linkControl = require('linkControl');
 var intel = require('military.intelligence');
-
-
-
 
 /*
 RoomObject.prototype.hello = function() { console.log(hello);};
@@ -35,9 +33,7 @@ https://gist.github.com/Puciek/641e5f89246958167774e384b65af7a6
 
 module.exports.loop = function () {
 
-
     intel.defense()
-    
 
     // If a miner is an old miner create a replacement but keep working.
     // role to code used in role hash
@@ -140,7 +136,6 @@ module.exports.loop = function () {
         
         // Incrament the total count of creeps of that role
         Memory.population[cRole]['total'] += 1;
-        
         
         // Incrament the number of creeps stationed in said room.
         Memory.population[cRole]['station'][cStation] += 1;

@@ -3,48 +3,20 @@
 var spawnCommands = {
     
     // Function that handles spawning of creeps
-    spawnNew:function(spawnObject,desired,body,cName,memObject,byStation = true,ttl = body.length*3){
+    spawnNew:function(spawnObject,creep_body,creep_name,creep_memory){
         
-        // ttl is the number of ticks a new creep will take to replace the old one.
+        //,ttl = body.length*3 ttl is the number of ticks a new creep will take to replace the old one.
         
-        var creep_role = memObject['role'];
-        
-        var rName = spawnObject.room.name;
-        
-        // How many creeps are either stationed or in the room.
-        if(byStation){
-            var pop = Memory.population[creep_role]['station'][rName];
-            
-            // Lowest time to live among the creeps stationed in that room
-            if(Memory.population[creep_role]['station'][rName+'TTL'] < ttl){
-                pop = pop - 1;
-            }
-            
-        }else{
-            var pop = Memory.population[creep_role]['room'][rName];
-            
-            // Lowest time to live among the creeps stationed in that room
-            if(Memory.population[creep_role]['room'][rName+'TTL'] < ttl){
-                pop = pop - 1;
-            }
-        }
+        var creep_role = creep_memory['role'];
 
-        var extended = memObject;
+        var extended = creep_memory;
         
         extended['spawn'] = spawnObject.name;
         
-
-        if(pop < desired){
-            var name = spawnObject.createCreep(body,cName+Memory.N,extended);
-        }
-        if (name != -4 && name != -6 && name != undefined){
-                console.log(""+spawnObject.name+" "+name);
-                Memory.N = Memory.N +1;
-        }
+        var name = spawnObject.createCreep(creep_body,creep_name+Memory.N,extended);
+        
+        return name;
     },
-    
-    
-    
     
     // Send miners trucks and claimers to a given room to mine it and return resorces to the base that spawned them.
     remote_source_mine:function(RoomName,spawnObject,NumTrucks,numMiners,numClaimers,claim = false){
