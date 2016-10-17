@@ -12,7 +12,7 @@
 var ecoAI = {
 
     // Compute optimal number of upgraders.
-    optimalUpgraders:function(SpawnLoc,upgrader_body, budget = 2000 , income_per_300 = 3000){
+    optimalUpgraders:function(SpawnLoc,upgrader_body, budget = 2000 , income_per_300 = 3000,report = false){
         
         roomName = SpawnLoc.room.name;
         
@@ -69,20 +69,24 @@ var ecoAI = {
         //How efficent is it? In terms of creep cost vs work done?
         var energy_efficency = lifetime_energy_contribution/total_energy_cost
 
-        console.log(SpawnLoc.name+'\n'
-        +'body_cost '+body_cost+'\n'
-        +'ticks_per_trip '+ticks_per_trip+'\n'
-        +'carryCapacity '+carryCapacity+'\n'
-        +'workParts'+workParts+'\n'
-        +'ticks_of_work '+ticks_of_work+'\n'
-        +'ticks_per_job '+ticks_per_job+'\n'
-        +'jobs_in_life '+jobs_in_life+'\n'
-        +'lifetime_energy_contribution '+lifetime_energy_contribution+'\n'
-        +'total_energy_cost '+total_energy_cost+'\n'
-        +'total_energy_in_budget '+total_energy_in_budget+'\n'
-        +'creep_overspend '+creep_overspend+ '\n'
-        +'upgraders_needed '+upgraders_needed+'\n'
-        +'energy_efficency '+energy_efficency+'\n')
+        if(report){
+            console.log(SpawnLoc.name+'\n'
+            +'body_cost '+body_cost+'\n'
+            +'ticks_per_trip '+ticks_per_trip+'\n'
+            +'carryCapacity '+carryCapacity+'\n'
+            +'workParts'+workParts+'\n'
+            +'ticks_of_work '+ticks_of_work+'\n'
+            +'ticks_per_job '+ticks_per_job+'\n'
+            +'jobs_in_life '+jobs_in_life+'\n'
+            +'lifetime_energy_contribution '+lifetime_energy_contribution+'\n'
+            +'total_energy_cost '+total_energy_cost+'\n'
+            +'total_energy_in_budget '+total_energy_in_budget+'\n'
+            +'creep_overspend '+creep_overspend+ '\n'
+            +'upgraders_needed '+upgraders_needed+'\n'
+            +'energy_efficency '+energy_efficency+'\n')
+        }
+
+
         
         return upgraders_needed
     },
