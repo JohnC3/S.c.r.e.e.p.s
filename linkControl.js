@@ -14,17 +14,71 @@ var linkControl = {
 
         
         if(r_storage != undefined){
+            // Get the link for the storage.    
+            var storage_link = r_storage.pos.findInRange(FIND_MY_STRUCTURES, 2, 
+                {filter: {structureType: STRUCTURE_LINK}})[0];
             
-            var linkTos = r_storage.pos.findInRange(FIND_MY_STRUCTURES, 2, 
-                {filter: {structureType: STRUCTURE_LINK}});
+            // Get the link nearist the controller if applicable.
+            
+            //var controller_link = r.controller.pos.findClosestByRange(FIND_MY_STRUCTURES,{filter: {structureType: STRUCTURE_LINK}})
+            
+            var controller_link = r.controller.pos.findInRange(FIND_MY_STRUCTURES, 6, 
+                {filter: {structureType: STRUCTURE_LINK}})[0];
+            
+            if(storage_link){
+                if(controller_link.id == storage_link.id){
+                    controller_link = undefined;
+                }
+            }
+
+            
+
                 
-            var otherLinks = r_storage.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_LINK && s.id != linkTos[0].id} );
+            if(storage_link != undefined && controller_link != undefined){
+                var otherLinks = r_storage.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_LINK && s.id != storage_link.id && s.id != controller_link.id} );
+            } else if(storage_link != undefined){
+                var otherLinks = r_storage.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_LINK && s.id != storage_link.id} );
+            }
+            
+            // if the controller link exists send it power first.
+            if(controller_link){
+                for(var i in otherLinks){
+                    var oLinks = otherLinks[i];
+                    
+                    if(controller_link.energy == 800){
+                        oLinks.transferEnergy(controller_link)
+                    }else{
+                        oLinks.transferEnergy(storage_link)
+                    }
+                }
+                
+                if(controller_link.energy < 800){
+                    
+                    storage_link.transferEnergy(controller_link)
+                }
+                
+            }else{
+                
+                for(var i in otherLinks){
+                    var oLinks = otherLinks[i];
+                    oLinks.transferEnergy(storage_link)
+                }
+                    
+                
+            }
+            
+            
+            //var linkTos = r_storage.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
                 
             
+            //var otherLinks = r_storage.room.find(FIND_MY_STRUCTURES,{filter: s => s.structureType == STRUCTURE_LINK && s.id != linkTos[0].id} );
+                
+            /*
             if(r.memory.invert){
-                var temp = linkTos;
-                var linkTos = otherLinks;
-                var otherLinks = temp;
+                
+                if(controller_link.energy < 800){
+                    
+                }
                 
             }
 
@@ -41,7 +95,7 @@ var linkControl = {
                         linkFrom.transferEnergy(linkTo);
                     }
                 }
-            }
+            }*/
         }
     }
 }
