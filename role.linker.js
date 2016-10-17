@@ -19,8 +19,10 @@ var roleLinker = {
         
         // If the links are set to go from storage to controller.
         if(creep.room.memory.invert){
-            if(Link.energy < 800){
+            if(Link.energy < 400){
                 roleLinker.transfer(creep,Link,Storage)
+            } else if(Link.energy > 650){
+                roleLinker.transfer(creep,Storage,Link)
             }
             
         }
@@ -30,15 +32,15 @@ var roleLinker = {
         }
     },
     // Transfer from one to the other.
-    transfer:function(creep,Storage,Link){
+    transfer:function(creep,target,source){
         if(creep.carry.energy > 0){
-                if(creep.transfer(Storage,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                    creep.moveTo(Storage);
-                }
+            if(creep.transfer(target,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+                creep.moveTo(target);
+            }
         }
         else{
-            if(creep.withdraw(Link,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                creep.moveTo(Link);
+            if(creep.withdraw(source,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+                creep.moveTo(source);
                 }
             }
         }

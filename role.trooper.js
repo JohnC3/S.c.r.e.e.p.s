@@ -1,8 +1,9 @@
+
 var roleTrooper = {
     
     run: function(creep){
         
-        
+
         if(creep.memory.station == undefined){
             creep.memory.station = creep.room.name;
         } 
