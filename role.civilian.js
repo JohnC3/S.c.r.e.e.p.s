@@ -7,10 +7,6 @@
 var civilian = {
     // Civilians have a few common properties the most important is moveing to assigned rooms.
     
-    
-    
-    
-    
     // For the sake of polymorphism we need a run function.
     run:function(creep){
         civilian.simple_goto(creep)
@@ -43,40 +39,53 @@ var civilian = {
         
     },
     
-    // When the room a civilian is stationed in becomes unsafe civilians should flee. 
-    preform_function:function(creep){
+    // Taken from the documentation
+    find_path:function(creep){
         
-        if(creep.memory.station == undefined){
-            creep.memory.station = creep.room.name;
-        }
+        let from = new RoomPosition(25, 25, creep.room.name);
         
-        // Memory.safety is a dict of room names that hash to the safety.
-        if(Memory.safety[creep.memory.station]){
-            if(creep.room.name != creep.memory.station){
-                creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
-            } 
-        } 
-        // If the room is not safe they should withdraw
-        else{
+        
+
+        let to = new RoomPosition(25, 25, creep.memory.station);
+        
+
+        if(to === undefined){
+            console.log('to undefined')
             
-            if(Game.flags.station){
-                creep.moveTo(Game.flags.station)
-            }
+            console.log(new RoomPosition(25, 25, creep.memory.droplocation));
             
-            else{
-                // Look at all rooms you consider under your control.
-                var observed_room = Memory.myDomain;
-                
-                // Filter out rooms in danger
-                var safe_rooms = _.filter(observed_room, function(r){ return Memory.safety[r]})
-                
-                // Find the nearest safe room to the station.
-                var nearist_safe_room = _.min(observed_room,function(r){return Game.map.getRoomLinearDistance(creep.memory.station,r)})
-                
-                // Create a flag for the nearist safe room
-                console.log(Game.rooms[nearist_safe_room].createFlag(x = 25, y = 25,name = creep.memory.station));
-            }
+            console.log(new RoomPosition(25, 25, creep.memory.station));
         }
+        // Use `findRoute` to calculate a high-level plan for this path, 
+        // prioritizing highways and owned rooms
+        let allowedRooms = { [ from.roomName ]: true };
+        Game.map.findRoute(from.roomName, to.roomName, {
+        	routeCallback(roomName) {
+        		let parsed = /^[WS]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
+        		let isHighway = (parsed[1] % 10 === 0) || (parsed[2] % 10 === 0);
+        		let isMyRoom = Game.rooms[roomName] && 
+        			Game.rooms[roomName].controller && 
+        			Game.rooms[roomName].controller.my;
+        		if (isHighway || isMyRoom) {
+        			return 1;
+        		} else {
+        			return 2.5;
+        		}
+        	}
+        }).forEach(function(info) {
+        	allowedRooms[info.room] = true;
+        });
+        
+        // Invoke PathFinder, allowing access only to rooms from `findRoute`
+        let ret = PathFinder.search(from, to, {
+        	roomCallback(roomName) {
+        		if (allowedRooms[roomName] === undefined) {
+        			return false;
+        		}
+        	}
+        });
+        
+        console.log(ret.path);
     }
 }
 

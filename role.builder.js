@@ -1,4 +1,7 @@
 var roleTruck = require('role.truck')
+var roleHarvester = require('role.harvester')
+var common = require('commonfunctions')
+
 
 var roleBuilder = {
     // Take from storeage to build instead of stupid.
@@ -6,14 +9,25 @@ var roleBuilder = {
     
     
     run: function(creep) {
-        if(creep.memory.station == undefined){
-            creep.memory.station = creep.room.name;
+        
+        if(Game.flags.Flag3){
+            
+            var target = Game.flags.Flag3.room.lookForAt(LOOK_STRUCTURES,Game.flags.Flag3)[0]
+            
+            if(creep.dismantle(target) == ERR_NOT_IN_RANGE){
+                return creep.moveTo(target)
+            }
         }
         
-        if(creep.room.name != creep.memory.station){
-            creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
-        } 
-        else{
+        if(creep.memory.station == undefined){
+            creep.memory.station = creep.room.name;
+            
+        }
+        
+        
+        common.moveToStation(creep)
+        
+        if(creep.room.name == creep.memory.station){
             if(creep.room.find(FIND_CONSTRUCTION_SITES).length > 0){
                 roleBuilder.build_Site(creep);
             }
@@ -38,7 +52,6 @@ var roleBuilder = {
             }
         }
         
-
 	    if(creep.memory.building && creep.carry.energy == 0) {
             creep.memory.building = false;
             }
@@ -57,7 +70,13 @@ var roleBuilder = {
 	        roleBuilder.getEnergy(creep);
 
 	    }
-	}, 
+	},
+	// Gets energy.
+   	getEnergy:function(creep){
+   	    if(roleTruck.get_energy(creep) == 0){
+            roleHarvester.get_energy(creep)
+   	    }
+   	}, 
 	fix:function(creep){
 	    if(creep.memory.repairing == undefined){
 	        creep.memory.repairing = false;
@@ -68,13 +87,10 @@ var roleBuilder = {
 	    
 	    if(creep.memory.repairing){
     	    var repair_target = Game.getObjectById(creep.memory.repair_priority);
-    	    
     	    if(repair_target == undefined || repair_target.hits == repair_target.hitsMax){
     	        var damagedStructures = creep.room.find(FIND_STRUCTURES,{filter: (structure) => structure.hits < structure.hitsMax})
                 var mostDamagedStructure = _.sortBy(damagedStructures,'hits');
-                
                 creep.memory.repair_priority = mostDamagedStructure[0].id;
-
     	    } else{
                 if(creep.repair(repair_target) == ERR_NOT_IN_RANGE){
                     creep.moveTo(repair_target);
@@ -92,28 +108,7 @@ var roleBuilder = {
 	        // Get energy
             roleBuilder.getEnergy(creep);
    	    }
-    },
-   	getEnergy:function(creep){
-   	    
-   	    
-            var dropped_e = creep.room.find(FIND_DROPPED_RESOURCES);
-            var storedResource = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-                filter: (resource) => 
-                    (resource.structureType == STRUCTURE_LINK && resource.energy > 0) ||
-                    (resource.structureType == STRUCTURE_STORAGE && resource.store[RESOURCE_ENERGY] > 0)
-                    
-                });	        
-
-	        if (storedResource){
-	            if (creep.withdraw(storedResource,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-	                creep.moveTo(storedResource)
-	                
-	            }
-	        } else {
-	            roleTruck.get_energy(creep,idleFlag = false)
-
-	        }
-   	}
+    }
 };
 
 module.exports = roleBuilder;

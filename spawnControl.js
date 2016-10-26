@@ -16,19 +16,10 @@ var spawnControl = {
         
         var enemy_creeps = cur_room.find(FIND_HOSTILE_CREEPS);
         
-        //Memory.creeps_needed[cur_room.name] = {};
         if(enemy_creeps.length > 0){
             spawnControl.military(spawn,enemy_creeps);
         }
-        
-        //try{
         spawnControl.economic(spawn);
-        /*}catch(Error){
-            console.log('Error in new economic code')
-            spawnControl.economic(spawn);
-        }*/
-        
-        
     },
 
     
@@ -53,19 +44,10 @@ var spawnControl = {
         
     },
     
- 
-    
+    // Run spawns for the economic situation.
     economic:function(spawn){
         
-        /*
-        if(spawn == 'Spawn1'){
-            if(_.filter(Game.creeps,c => c.memory.role == 'civilian').length < 2){
-                var name = Game.spawns.Spawn1.createCreep([MOVE],'civ tester'+Memory.N,{'role':'civilian'})
 
-            }
-        }
-        */
-        
 
         var currentSpawn = Game.spawns[spawn];
 
@@ -81,8 +63,6 @@ var spawnControl = {
         
         
         var num_sources = currentSpawn.room.find(FIND_SOURCES).length;
-        
-        
         
         var num_storage = cur_room.find(FIND_STRUCTURES,{filter: s => s.structureType == STRUCTURE_STORAGE }).length;
 
@@ -130,16 +110,33 @@ var spawnControl = {
         if (mem['trooper']['total'] < Memory.troops_needed){
             name = currentSpawn.createCreep([MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,RANGED_ATTACK,RANGED_ATTACK],"Troop"+Memory.N,{'role':'trooper','rally_flag':'troops'});
         }
+        
+        
+        var lab_workers = mem['labWorker']['creeps']
+        
+        var transportBody = Memory.creepBody[SpawnLoc.room.name]['transport'];
+        
+        var rez = ["O","H","U"]
+        
+        for(var i in rez){
+            
+            var current_resource = rez[i]
+
+            if(_.filter(lab_workers, c => c.memory.resource == current_resource).length < 1){
+                name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = transportBody,creep_name = 'lab',creep_memory = {'role':'labWorker','resource':current_resource})
+            }
+        }
+
 
         // Emergency spawn code begins
         
         // Spawn a upgrader if the controller looks like its on its way to downgrading.
         if (currentSpawn.room.controller.ticksToDowngrade <4900 && currentSpawn.canCreateCreep(upgraderBody) != OK && mem['upgrader']['room'][SR] < 1){
-            name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = [WORK,CARRY,MOVE],creep_name = "Eup"+Memory.N,creep_memory = {'role':'upgrader','emergency':true})
+            name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = [WORK,CARRY,MOVE,MOVE],creep_name = "Eup",creep_memory = {'role':'upgrader','emergency':true})
         }
         
         if (mem['miner']['room'][SR] > 0 && mem['truck']['station'][SR] == 0 && num_links < num_sources + 1){
-            name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = [CARRY,CARRY,MOVE,MOVE],"ETruck"+Memory.N,creep_name = 'ETruck'+Memory.N,creep_memory = {'role':'truck','collect_dropped':true,'emergency':true})
+            name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = [CARRY,CARRY,MOVE,MOVE],"ETruck",creep_name = 'ETruck'+Memory.N,creep_memory = {'role':'truck','collect_dropped':true,'emergency':true})
 
         }
         
@@ -178,10 +175,38 @@ var spawnControl = {
             var harvest_cost = ecoAI.harvestCost(SpawnLoc);
             
             ecoAI.capUpgraderParts(SpawnLoc)
+
+            // get total stuff in storage if its defined.
+            if(SpawnLoc.room.storage){
+                
+                if(Memory.budget_by_room[cur_room.name] < 1000 || Memory.budget_by_room[cur_room.name] == undefined){
+                    Memory.budget_by_room[cur_room.name] = 1000
+                }
+                
+                
+                
+                var total = _.sum(SpawnLoc.room.storage.store);
+                
+                if(total > 0.90 * SpawnLoc.room.storage.storeCapacity){
+                    Memory.budget_by_room[cur_room.name] += 10;
+                }
+                // If energy is low remove some.
+                if(total < SpawnLoc.room.storage.storeCapacity/2){
+                    Memory.budget_by_room[cur_room.name] = Memory.budget_by_room[cur_room.name] - 100;
+                }
+                
+
+                
+                
+            }
             
-            var budget_by_room = {'W53S33':3000,'W52S33':3000,'W51S33':1500,'W52S34':1800}
+            var h_budget = Memory.budget_by_room[cur_room.name] - harvest_cost
             
-            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = budget_by_room[cur_room.name] - harvest_cost);
+            if(h_budget == undefined){
+                h_budget = 2500;
+            }
+            
+            Memory.Upgraders_needed[cur_room] = ecoAI.optimalUpgraders(SpawnLoc,upgraderBody,budget = h_budget);
             
             upgraders_needed = Memory.Upgraders_needed[cur_room];
         }
@@ -202,49 +227,52 @@ var spawnControl = {
         var num_links = currentSpawn.room.find(FIND_STRUCTURES, {filter : s => s.structureType == STRUCTURE_LINK} ).length;
         
         if(num_links < num_sources + 1){
-            var trucks_needed = num_sources;
+            var trucks_needed = num_sources - 1;
         } else {
-            var trucks_needed = 1;
+            var trucks_needed = num_sources;
         }
         
-        var transportBody = Memory.creepBody[SpawnLoc.room.name]['transport'];
+        
         
         if (mem['truck']['station'][SR] < trucks_needed){ 
             name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = transportBody,creep_name = "Truck "+Memory.N,creep_memory = {'role':'truck',
                 'station':cur_room.name,'droplocation':cur_room.name}) 
-        } 
+        }
+        
         // Miner body
         
         var miner_body = Memory.creepBody[SpawnLoc.room.name]['miner'];
         
         // How many work parts do the miners in the room currently have?
+        
         var work_parts_in_miner = _.filter(miner_body,p => p == WORK).length;
 
         if(mem['miner']['room'][SR]*work_parts_in_miner < num_sources*5  && mem['miner']['room'][SR] < 6){
             
-            name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = miner_body,creep_name = "Miner"+Memory.N,creep_memory = {'role':'miner','station':cur_room.name})
+            name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = miner_body,creep_name = "Miner",creep_memory = {'role':'miner','station':cur_room.name})
         } 
         
         if(num_storage == 1){
             if (_.filter(Game.creeps, (c)=>c.memory.role == 'distributer' && c.room.name == cur_room.name && c.memory.emergency != true && c.ticksToLive > 100).length < 2){
                 
-                spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = transportBody,creep_name = "Distributer"+Memory.N,creep_memory = {'role':'distributer','station':cur_room.name,'droplocation':cur_room.name})
+                spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = transportBody,creep_name = "Distributer",creep_memory = {'role':'distributer','station':cur_room.name,'droplocation':cur_room.name})
                 
             } else if (mem['maintance']['room'][SR] < 1 && cur_room.storage.store[RESOURCE_ENERGY] > 10000){
-                name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],creep_name = "Maintance "+Memory.N,creep_memory = {'role':'maintance'}) 
-
+                name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = [WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],creep_name = "Maintance ",creep_memory = {'role':'maintance'})
+                
             }
             if(num_links >= 2){
                 if(mem['linker']['room'][SR] < 1){
-                    name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = [CARRY,CARRY,CARRY,CARRY,MOVE],creep_name = 'Linker'+Memory.N,creep_memory = {'role':'linker'}) 
+                    name = spawnCommands.spawnNew(spawnObject = currentSpawn,creep_body = [CARRY,CARRY,CARRY,CARRY,MOVE],creep_name = 'Linker',creep_memory = {'role':'linker'}) 
                 }
             }
+            
         }
+        
+        if(name == -10){
+            console.log('Error of some kind!')
+        }    
 
-        if (name != -4 && name != -6 && name != undefined && name != ''){
-                console.log(""+spawn+" "+name);
-                Memory.N = Memory.N +1;
-        }
     }
 }
 

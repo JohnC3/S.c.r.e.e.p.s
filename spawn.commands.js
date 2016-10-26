@@ -23,18 +23,37 @@ var spawnCommands = {
         if(creep_role == 'miner'){
             mem['energy_harvested'] = 0;
         }
+        
+        if(mem['station'] == undefined){
+            mem['station'] = mem['spawnRoom'];
+        }
+        
+        
         //console.log(JSON.stringify(mem))
         var name = spawnObject.createCreep(creep_body,creep_name+Memory.N,mem);
+        
+        if(name == -10){
+            console.log(spawnObject.name+'\n'+
+            creep_name+'\n'+
+            JSON.stringify(creep_body)+'\n'+
+            creep_body.length+'\n'+
+            JSON.stringify(spawnObject.canCreateCreep(creep_body))+'\n'+
+            JSON.stringify(creep_memory)+'\n')
+        }
         
         return name;
     },
     
     // Send miners trucks and claimers to a given room to mine it and return resorces to the base that spawned them.
-    remote_source_mine:function(RoomName,spawnObject,NumTrucks,numMiners,numClaimers,claim = false){
+    remote_source_mine:function(RoomName,spawnObject,NumTrucks,numMiners,numClaimers,claim = false,delivery_room = undefined){
         
         // Add the room to my domain if it is not already.
         if(Memory.myDomain.indexOf(RoomName) == -1){
             Memory.myDomain.push(RoomName)
+        }
+        
+        if(claim != true && claim != false){
+            claim = false
         }
         
         
@@ -42,12 +61,20 @@ var spawnCommands = {
         
         if(Memory.safety[RoomName]){
             
+            // Optionally the delivery room can overide which room recives the resources.
+            if(delivery_room == undefined){
+                var drop_room = spawnObject.room.name
+            } else{
+                var drop_room = delivery_room
+            }
+            
+            
+            
 
             // transport body
-            var transport_body = bodyBuilder.largest_transport(spawnObject)
+            var transport_body = bodyBuilder.largest_transport(spawnObject,station = RoomName,cap = 1000)
             
-            transport_body.push(WORK)
-            transport_body.push(MOVE)
+            
             
             // Miner body
             var miner_body = bodyBuilder.largest_miner(spawnObject)
@@ -76,37 +103,69 @@ var spawnCommands = {
             if(Memory.population['claimer']['station'][RoomName+'TTL'] < transit_time){
                 claimers = claimers - 1;
             }
-            //
+            
+            // How many miners are needed?
+            
             if(Miners*work_parts_in_miner < numMiners*5 && Miners < 6){
                 
                 var name = spawnCommands.spawnNew(spawnObject,creep_body = miner_body,creep_name = 'R Miner',creep_memory = {'role':'miner','station':RoomName});
-                //var name = spawnObject.createCreep(miner_body,'RemoteMiner'+Memory.N,{'role':'miner','station':RoomName});
-    
+
             } else if (transports <  NumTrucks){
-                var name = spawnCommands.spawnNew(spawnObject,creep_body = transport_body,creep_name = "R Truck",creep_memory = {'role':'truck','station':RoomName,'droplocation':spawnObject.room.name,'energy_pickedup':0,'energy_delivered':0});
-                //var name = spawnObject.createCreep(transport_body,"RTruck"+Memory.N,{'role':'truck','station':RoomName,'droplocation':spawnObject.room.name,'energy_pickedup':0,'energy_delivered':0});
+
+
+                var name = spawnCommands.spawnNew(spawnObject,creep_body = transport_body,creep_name = "R Truck",creep_memory = {'role':'truck','station':RoomName,'droplocation':drop_room,'energy_pickedup':0,'energy_delivered':0});
+
             } else if (claimers< numClaimers){ // && Game.rooms[RoomName].controller.reservation.ticksToEnd < 1500
-                try{
-                    var name = spawnCommands.spawnNew(spawnObject,creep_body = [MOVE,MOVE,CLAIM,CLAIM],creep_name = "Diplomat",creep_memory = {'role':'claimer','station':RoomName,'claimmode':claim});
-                    //var name = spawnObject.createCreep([MOVE,MOVE,CLAIM,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':RoomName,'claimmode':claim});
-                    if (name == ERR_NOT_ENOUGH_ENERGY){
-                        var name = spawnCommands.spawnNew(spawnObject,creep_body = [MOVE,CLAIM],creep_name = "Diplomat",creep_memory = {'role':'claimer','station':RoomName,'claimmode':claim});
-                        //var name = spawnObject.createCreep([MOVE,CLAIM],"Diplomat"+Memory.N,{'role':'claimer','station':RoomName,'claimmode':claim});
-                    }
-                }catch(TypeError){
-                    console.log('claimer error')
+
+
+                var name = spawnCommands.spawnNew(spawnObject,creep_body = [MOVE,MOVE,CLAIM,CLAIM],creep_name = "Diplomat",creep_memory = {'role':'claimer','station':RoomName,'claimmode':claim});
+
+                if (name == ERR_NOT_ENOUGH_ENERGY){
+
+                    
+                    var name = spawnCommands.spawnNew(spawnObject,creep_body = [MOVE,CLAIM],creep_name = "Diplomat",creep_memory = {'role':'claimer','station':RoomName,'claimmode':claim});
+
                 }
+
             }
+
+        }else{
+            // If the room is not safe spawn a scout to check it out!
             
-            if (name != -4 && name != -6 && name != undefined){
-                    console.log(""+spawnObject.name+" "+name);
-                    Memory.N = Memory.N +1;
+            var scouts = Memory.population['scout']['station'][RoomName] || 0;
+            
+            // scouts are disabled untill I can think of a way for them to work!
+            
+            if(scouts < 1){
+                console.log(RoomName+' not safe for remote operations dispatching scout' )
+                var name = spawnCommands.spawnNew(spawnObject,creep_body = [MOVE,ATTACK],creep_name = "Scout",creep_memory = {'role':'scout','station':RoomName});
             }
         }
+            
+        if (name != -4 && name != -6 && name != undefined){
+                console.log(""+spawnObject.name+" "+name);
+                Memory.N = Memory.N +1;
+        }
+    },
+    // Dispatch trucks to get a specific resource from a room!
+    
+    dispatch_trucks:function(RoomName,spawnObject,number,resource = 'energy'){
+        if(resource != 'energy'){
+            console.log('you didnt write code on how to pickup anything but energy...')
+        }
+        
+        
+        
+        
+        
+        // transport body
+        var transport_body = bodyBuilder.largest_transport(spawnObject,station = RoomName,cap = 1000)
     },
     
+    
+    
     // Dispatch builders to another room, along with trucks to dropoff energy in said room.
-    dispatch_builders:function(RoomName,spawnObject,NumTrucks,numBuilders,numMiners = 1){
+    dispatch_builders:function(RoomName,spawnObject,numBuilders){
         
         if(Memory.myDomain.indexOf(RoomName) == -1){
             Memory.myDomain.push(RoomName)
@@ -116,26 +175,9 @@ var spawnCommands = {
         
         var builders = Memory.population['builder']['station'][RoomName];
         
-        
-        
         if(builders < numBuilders){
             var workerBody = bodyBuilder.largest_worker(spawnObject)
             var name = spawnObject.createCreep(workerBody,"builder"+Memory.N,{'role':'builder','station':RoomName});
-        }
-        
-        var trucks = Memory.population['truck']['station'][RoomName]
-        
-        if(trucks < NumTrucks){
-            var transport_body = bodyBuilder.largest_transport(spawnObject)
-            var name = spawnObject.createCreep(transport_body,"Hauler"+Memory.N,{'role':'truck','station':RoomName,'droplocation':RoomName});
-        }
-        
-        var Miners = Memory.population['miner']['station'][RoomName]
-        
-        if(Miners < numMiners){
-            var miner_body = bodyBuilder.largest_miner(spawnObject)
-            var name = spawnObject.createCreep(miner_body,'RemoteMiner'+Memory.N,{'role':'miner','station':RoomName});
-
         }
         
         if (name != -4 && name != -6 && name != undefined){

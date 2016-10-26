@@ -3,31 +3,16 @@ var roleTrooper = {
     
     run: function(creep){
         
+        if(Game.flags.overideArmy){
+            console.log('overridden')
+            creep.say(creep.moveTo(Game.flags.overideArmy))
+            return creep.moveTo([Game.flags.overideArmy])
+        }
 
         if(creep.memory.station == undefined){
             creep.memory.station = creep.room.name;
         } 
-        /*
-        if(creep.memory.rally_flag){
-            
-            
-            try{
-                if(Game.flags[creep.memory.rally_flag].room.name != creep.memory.station){
-                    creep.memory.station = Game.flags[creep.memory.rally_flag].room.name
-                }
-                
-            }
 
-            catch(TypeError){
-                if(Game.flags[creep.memory.rally_flag] == undefined){
-                    console.log(creep.name +' rally flag undefined')
-                }
-                    
-                console.log(creep.memory.rally_flag)
-            }
-        }
-        */
-        
         // Temporary pending code that checks if the walls of a room are up.
         creep.room.memory.wallsup = true
         
@@ -35,6 +20,8 @@ var roleTrooper = {
             roleTrooper.man_rampart(creep)
         }
         else{
+            
+            
             // Move to the correct room.
             if(creep.room.name != creep.memory.station){
                 creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.station)));
@@ -76,17 +63,20 @@ var roleTrooper = {
                     creep.say('new room')
                     creep.moveTo(new RoomPosition(23,23,creep.room.name))
                 }else{
-                    creep.say('guard duty is lame');
-                }
-                /*else{
-                    if(creep.memory.rally_flag){
-                        creep.moveTo(Game.flags[creep.memory.rally_flag]);
+                    creep.say('guard duty');
+                    if(creep.pos.x < 40 && creep.pos.y < 40){
+                        creep.move(TOP_RIGHT)
                     }
-                    else{
-                        creep.moveTo(Game.flags.rally);
+                    if(creep.pos.x < 40){
+                        creep.move(RIGHT)
                     }
+                    if(creep.pos.y < 40){
+                        creep.move(TOP)
+                    }
+
                     
-                }*/        
+                }
+  
             }
         }
     },

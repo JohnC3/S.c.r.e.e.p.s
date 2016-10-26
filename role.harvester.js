@@ -52,12 +52,7 @@ var roleHarvester = {
                 creep.say('dropoff');
             }
             else{
-                var target = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
-                if(target) {
-                    if(creep.harvest(target) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(target);
-                    }
-                }
+                roleHarvester.get_energy(creep)
             }
 
             
@@ -66,6 +61,14 @@ var roleHarvester = {
             creep.memory.action = 'dropoff'
         }
         
+    },
+    get_energy:function(creep){
+        var target = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
+        if(target) {
+            if(creep.harvest(target) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(target);
+            }
+        }
     }
 }
 module.exports = roleHarvester;

@@ -11,6 +11,10 @@ var roleClaim = require('role.claim');
 var roleHealer = require('role.healer');
 var roleCollector = require('role.collector');
 var roleCivilian = require('role.civilian');
+var labWorker = require('role.labWorker')
+var lab = require('lab.control')
+
+
 
 var spawnCommands = require('spawn.commands');
 var spawnControl = require('spawnControl');
@@ -19,6 +23,8 @@ var roleMaintance = require('role.maintance');
 var tower = require('towerControl');
 var linkControl = require('linkControl');
 var intel = require('military.intelligence');
+
+var transitAI = require('transit.AI');
 
 /*
 RoomObject.prototype.hello = function() { console.log(hello);};
@@ -32,6 +38,18 @@ https://gist.github.com/Puciek/641e5f89246958167774e384b65af7a6
 */
 
 module.exports.loop = function () {
+    
+
+    
+    //transitAI.clear_roads()
+    
+    // Arrays for the remoteMiner code. They need to be here.
+    
+    Memory.miners = new Array();
+    Memory.occupied_sources = new Array();
+    ecoAI.run()
+    
+    Memory.myDomain = new Array();
 
     intel.defense()
 
@@ -39,7 +57,7 @@ module.exports.loop = function () {
     // role to code used in role hash
     var creep_type = {'claimer':roleClaim,'harvester':roleHarvester,'upgrader':roleUpgrader,'builder':roleBuilder,'miner':roleMiner,'collector':roleCollector,
     'truck':roleTruck,'trooper':roleTrooper,'knight':roleTrooper,'raider':roleTrooper,'healer':roleHealer,'distributer':roleDistributer,'linker':roleLinker,
-    'maintance':roleMaintance,'civilian':roleCivilian};
+    'maintance':roleMaintance,'civilian':roleCivilian,'scout':roleTrooper,'labWorker':labWorker};
     
     //
     if (Memory.N > 100 || Memory.N == undefined){
@@ -62,13 +80,15 @@ module.exports.loop = function () {
             // get the memory of the dead creep.
             var dead_creep = Memory.creeps[i]
             // For each creep that you delete record its details!
+            
+            /*
             if(dead_creep['role'] == 'miner'){
                 Memory.miner_efficency.push({'name':i,'station':dead_creep['station'],'energy_harvested':dead_creep['energy_harvested']})
             }
             else if(dead_creep['role'] == 'truck'){
                 Memory.truck_efficency.push({'name':i,'station':dead_creep['station'],'drop_location':dead_creep['drop_location'],'energy_taken':dead_creep['energy_pickedup'],'energy_delivered':dead_creep['energy_delivered']})
             }
-            
+            */
             
             
             
@@ -77,9 +97,7 @@ module.exports.loop = function () {
 
     }
     
-    // Arrays for the remoteMiner code. They need to be here.
-    Memory.miners = new Array();
-    Memory.occupied_sources = new Array();
+
     
     // Track the population of creeps.
     Memory.population = {}
@@ -91,6 +109,12 @@ module.exports.loop = function () {
     var observed_room = Object.keys(Game.rooms)
     
     for (var r in observed_room){
+        
+        if(r == "W53S33"){
+            lab
+        }
+        
+        
         
         var rname = observed_room[r]
         if(Memory.recorded_rooms.indexOf(rname) == -1){
@@ -106,15 +130,17 @@ module.exports.loop = function () {
     for (var i in all_existing_roles){
         
         var r = all_existing_roles[i];
-        Memory.population[r] = {'total':0,'station':{},'room':{}};
+        Memory.population[r] = {'total':0,'creeps':[],'station':{},'room':{}};
         for(var recorded_room in Memory.recorded_rooms){
             r_name = Memory.recorded_rooms[recorded_room];
             Memory.population[r]['station'][r_name] = 0;
             Memory.population[r]['room'][r_name] = 0;
             
             // Lowest ticks to live will also be recorded.
-            Memory.population[r]['station']['TTL'+r_name] = 1500;
-            Memory.population[r]['room']['TTL'+r_name] = 1500;
+            
+            //Memory.population[r]['station']['TTL'+r_name] = 1500;
+           
+            //Memory.population[r]['room']['TTL'+r_name] = 1500;
             
             
         }
@@ -137,16 +163,21 @@ module.exports.loop = function () {
         // Incrament the total count of creeps of that role
         Memory.population[cRole]['total'] += 1;
         
+        // Add the creep to the list
+        Memory.population[cRole]['creeps'].push(creep);
+        
+        // If station not accounted for acont it
+        if(Memory.population[cRole]['station'][cStation] == null){
+            Memory.population[cRole]['station'][cStation] = 0
+        }
+        
+        
         // Incrament the number of creeps stationed in said room.
         Memory.population[cRole]['station'][cStation] += 1;
-        
-        Memory.population[cRole]['station']['TTL'+cStation] = Math.min(Memory.population[cRole]['station']['TTL'+cStation],creep.ticksToLive);
         
         // Incrament the number of creeps who just are in the room
         Memory.population[cRole]['room'][cRoom] += 1;
         
-        Memory.population[cRole]['room']['TTL'+cRoom] = Math.min(Memory.population[cRole]['room']['TTL'+cRoom],creep.ticksToLive);
-      
     }
     
     for(var name in Game.creeps){
@@ -174,12 +205,10 @@ module.exports.loop = function () {
     // Set up remote mining operations.
     spawnCommands.remote_source_mine("W53S32",Game.spawns.Spawn3,2,1,1);
     spawnCommands.remote_source_mine("W54S33",Game.spawns.Spawn3,2,1,1);
-    //spawnCommands.remote_source_mine("W51S33",Game.spawns.Spawn1,2,1,1);
-    spawnCommands.dispatch_builders("W51S33",Game.spawns.Spawn1,numBuilders = 1,nunTrucks = 0,numMiners = 0);
-    
-    spawnCommands.remote_source_mine("W51S34",Game.spawns.Spawn4,2,1,1);
-    spawnCommands.remote_source_mine("W52S35",Game.spawns.Spawn4,2,1,1);
-    spawnCommands.remote_source_mine("W53S34",Game.spawns.Spawn4,2,1,1);
+
+    spawnCommands.remote_source_mine("W51S34",Game.spawns.Spawn1,2,1,1,claim=false,delivery_room = Game.spawns.Spawn4.room.name);
+    spawnCommands.remote_source_mine("W52S35",Game.spawns.Spawn4,1,1,1);
+    spawnCommands.remote_source_mine("W53S34",Game.spawns.Spawn4,1,1,1);
     spawnCommands.remote_source_mine("W53S35",Game.spawns.Spawn4,2,1,1);
     
     for(s in Game.spawns){

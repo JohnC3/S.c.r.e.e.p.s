@@ -10,9 +10,119 @@
     * how many reps will a builder get done? 
 */
 var ecoAI = {
+    
+    //Keeps track of the economy, by measuring the resources going into and out of the various storage units in my empire
+    
+    run:function(){
+        
+        ecoAI.setup_tracking();
+        
+        if(Memory.economicTimer == 2000){
+        
+            try{
+                for(var r in Memory.core_rooms){
+                    
+                    var roomName = Memory.core_rooms[r]
+                    
+                    var rObject = Game.rooms[roomName];
+                
+                    // Iterate through every resource in storage!
+                    for(var resource in rObject.storage.store){
+                        
+                        
+                        // The amount of said resource
+                        
+                        var volume = rObject.storage.store[resource];
+                        
+                        //console.log(JSON.stringify([resource,volume]))
+                        
+                        // Try to add the value of the resource trend to the resource history. If resource history is undefined for this room define it.
+                        
+                        if(Memory.resource_history[roomName] == undefined){
+                            Memory.resource_history[roomName] = {}
+                        }
+                        
+                        // If that resource is not in the history add it!
+                        if(Memory.resource_history[roomName][resource] == undefined){
+                            Memory.resource_history[roomName][resource] = [volume]
+                        }
+                        
+                        // If there are 10 values in the resource history remove the oldest with shift.
+                        if(Memory.resource_history[roomName][resource].length >= 10){
+                            Memory.resource_history[roomName][resource].shift()
+                        }
+                        Memory.resource_history[roomName][resource].push(volume)
+                
+                        // Now we calculate the gain or loss of said resource in the last 10 samples!
+                        
+                        //for(var j = 0 ; j+=2 ; j < 5){
+                            
+                        //    console.log(''+j+','+j+1)
+                            
+                        //}
+                        
+                        
+                    }
+                    
+                }
+            }
+            catch(Error){
+                Memory.economicTimer = undefined;
+                Memory.core_rooms = undefined;
+                Memory.resource_trend = undefined;
+                Memory.resource_history = undefined;
+            }
+        
+        }
+        
+        
+        
+    },
+    
+    // Sets up the memory areas used to track the metrics in run. 
+    setup_tracking:function(){
+        
+        // Setup the timer
+        if(Memory.economicTimer == undefined || Memory.economicTimer > 2000){
+            Memory.economicTimer = 0;
+        }
+        
+        Memory.economicTimer += 1;
+        
+        
+        // The core rooms are rooms that I control that are level 4 with the attending storage!
+        if(Memory.core_rooms == undefined){
+            
+            Memory.core_rooms = [];
+            
+            for(var r in Game.rooms){
+                rObject = Game.rooms[r];
+                if(rObject.storage){
+                    Memory.core_rooms.push(r);
+                }
+                
+            }
+            
+        }
+        
+        // Resource trends show trend of resource income! positive or negative.
+        if(Memory.resource_trend == undefined){
+            Memory.resource_trend = {}
+        }
+        
+        // Holds the last 10 values of a storages resources.
+        if(Memory.resource_history == undefined){
+            Memory.resource_history = {}
+        }
+        
+
+        
+        
+    },
+    
 
     // Compute optimal number of upgraders.
-    optimalUpgraders:function(SpawnLoc,upgrader_body, budget = 2000 , income_per_300 = 3000,report = false){
+    optimalUpgraders:function(SpawnLoc,upgrader_body, budget = 2000,report = false){
         
         roomName = SpawnLoc.room.name;
         
@@ -85,14 +195,12 @@ var ecoAI = {
             +'upgraders_needed '+upgraders_needed+'\n'
             +'energy_efficency '+energy_efficency+'\n')
         }
-
-
         
         return upgraders_needed
     },
 
     // 
-    capUpgraderParts:function(SpawnLoc, budget = 2000 , income_per_300 = 3000){
+    capUpgraderParts:function(SpawnLoc, budget = 2000){
         
         roomName = SpawnLoc.room.name;
         
@@ -152,7 +260,7 @@ var ecoAI = {
         
     },
     // Compute the energy cost of the miners trucks, linkers and distributers
-    harvestCost:function(SpawnLoc, numMiners = 2,numTrucks = 2,numDistributers = 1, budget = 2000 , income_per_300 = 3000){
+    harvestCost:function(SpawnLoc, numMiners = 2,numTrucks = 2,numDistributers = 1, budget = 2000 , income_per_300 = 3000,report = false){
         
         
         var roomName = SpawnLoc.room.name;
@@ -178,13 +286,13 @@ var ecoAI = {
         // What portion of the energy is budgeted towards them?
         var budget_needed = (total_build_cost/total_energy_in_budget) * income_per_300
         
-        console.log(SpawnLoc.name+' needs at least '+budget_needed+'\n'
-        + 'miner_body_cost '+miner_body_cost+'\n'
-        + 'transport_body_cost '+transport_body_cost+'\n'
-        + 'transport_body_cost '+transport_body_cost+'\n'
-        + 'total_build_cost '+total_build_cost+'\n'
-        + 'total_energy_in_budget '+total_energy_in_budget);
-        
+        if(report){
+            console.log(SpawnLoc.name+' needs at least '+budget_needed+'\n'
+            + 'miner_body_cost '+miner_body_cost+'\n'
+            + 'transport_body_cost '+transport_body_cost+'\n'
+            + 'total_build_cost '+total_build_cost+'\n'
+            + 'total_energy_in_budget '+total_energy_in_budget);
+        }
         
         return budget_needed
     },

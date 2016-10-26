@@ -27,33 +27,65 @@ var bodyBuilder = {
           
     },
     
-    // Build the largest transport the room can.
-    largest_transport:function(SpawnLoc,cap = 600){
+    // Build the largest transport the room can. optionally a station (room name as a string) is provided then make a different body.
+    largest_transport:function(SpawnLoc,station = undefined,cap = 600,report = false,roads = false){
+        
+        var Fatigue = 0;
         
         var room_development = SpawnLoc.room.energyCapacityAvailable;
         
         var transport_body = new Array(CARRY,MOVE);
         
-        var flip = true;
+        
+        var move_cost = 2;
+        if(roads){
+            move_cost = 1;
+        }
+        
+        
+        
+        // If the station is defined we know we need to check if it has roads or not.
+        if(station){
+            
+            // A road is established in the case that Memory.road_network is true
+            
+            if(Memory.road_network[station] == true){
+                transport_body =  [WORK,CARRY,MOVE,MOVE];
+                move_cost = 1;
+            } else if(Memory.road_network[station] == false){
+                transport_body =  [WORK,WORK,CARRY,MOVE,MOVE,MOVE];
+                move_cost = 2;
+            }
+        
+        }
         
         var cost_of_transport = ecoAI.bodyCost(transport_body);
         
-        while(cost_of_transport < Math.min(room_development -50,cap)){
-            if(flip){
-                transport_body.push(CARRY);
-                cost_of_transport += 50;
-                flip = false;
-            } else{
-                transport_body.push(MOVE);
-                cost_of_transport += 50;
-                flip = true;
+        while(cost_of_transport < Math.min(room_development,cap) && transport_body.length < 20){
+            
+            transport_body.push(CARRY);
+            cost_of_transport += 50 + move_cost*25;
+            
+            Fatigue += move_cost;
+            
+
+        }
+        
+        while(Fatigue > 0){
+            transport_body.push(MOVE);
+            cost_of_transport += 50;
+            Fatigue = Fatigue - 2;
+        }
+        
+        
+        transport_body.sort()
+        
+        if(report){
+            console.log("New transport body algorithm gives"+JSON.stringify(transport_body))
+            if(station){
+                console.log(' when dealing with a remote source mine at '+station +' where roads exist is '+Memory.road_network[station])
             }
         }
-        // If the number of MOVE parts is not equal to the number of carry parts fix it.
-        if(_.filter(transport_body,p => p == MOVE).length != _.filter(transport_body,p => p == CARRY).length){
-            transport_body.pop()
-        }
-        //console.log(transport_body)
         return transport_body
     },
     // Build the largest miner the room can.
@@ -69,22 +101,33 @@ var bodyBuilder = {
         
         var work_parts = 0;
         
-        while(cost_of_miner < room_development -100 && work_parts < 5){
-            if(flip){
+        var Fatigue = 2;
+        
+        while(cost_of_miner < room_development -100 && work_parts < 6 && miner_body.length < 25){
+            
+            if(Fatigue > 0){
+                miner_body.push(MOVE);
+                cost_of_miner += 50;
+                Fatigue = Fatigue -2;
+            }
+            else{
                 miner_body.push(WORK);
                 cost_of_miner += 100;
                 work_parts += 1;
-                flip = false;
-            } else{
-                miner_body.push(MOVE);
-                cost_of_miner += 50;
-                flip = true;
-            }
+                Fatigue += 2;
+            } 
         }
+        
+        while(Fatigue > 0){
+            miner_body.push(MOVE);
+            cost_of_miner += 50;
+            Fatigue = Fatigue -2;
+        }
+        
         return miner_body.sort()
     },
     // Largest upgrader, if roads is false then it needs a move part per each other part
-    largest_upgrader:function(SpawnLoc,roads = true,budget = 2000){
+    largest_upgrader:function(SpawnLoc,roads = true,budget = 2000,report = false){
         
         var max_work_parts = Math.ceil(budget/300)
         
@@ -98,62 +141,61 @@ var bodyBuilder = {
         
         var cost_of_upgrader = ecoAI.bodyCost(upgrader_body);
         
+        var move_cost = 2;
+        
+        var Fatigue = 0;
+        
         if(roads){
             var Fatigue = -1;
-        } else{
-            var Fatigue = 0;
+            move_cost = 1;
         }
         
         var work_parts = 0;
         
+        var count_to_carry = 0;
         
-        while(cost_of_upgrader < room_development - 100 && work_parts < max_work_parts){
+        while(cost_of_upgrader < room_development - 100 && work_parts < max_work_parts && upgrader_body.length < 48){
             
-            if(Fatigue > 0){
-                upgrader_body.push(MOVE);
+            // Every 4th work part add a carry part instead of a work part && If the upgrader never has to move (useing the ecoAI.upgradeDistance function) dont add carry parts
+                
+            if (count_to_carry == 4 && expected_travel > 0){
+                count_to_carry = 0;
+                upgrader_body.push(CARRY);
+            
                 cost_of_upgrader += 50;
-                Fatigue = Fatigue -2;
+                
+                Fatigue += move_cost;
+
             }
             else{
-                // Every 4th work part add a carry part instead of a work part && If the upgrader never has to move (useing the ecoAI.upgradeDistance function) dont add carry parts
+                upgrader_body.push(WORK);
                 
-                if (work_parts == 4 && expected_travel > 0){
-                    work_parts = 0;
-                    upgrader_body.push(CARRY);
-                
-                    cost_of_upgrader += 50;
-                    if(roads){
-                        Fatigue += 1;
-                    } else{
-                        Fatigue += 2;
-                    }
-                }
-                else{
-                    upgrader_body.push(WORK);
-                    
-                    cost_of_upgrader += 100;
-                    if(roads){
-                        Fatigue += 1;
-                    } else{
-                        Fatigue += 2;
-                    }
-                    work_parts += 1;
-                }
+                cost_of_upgrader += 100;
+
+                Fatigue += move_cost;
+
+                work_parts += 1;
+                count_to_carry += 1;
             }
-            if(Fatigue > 0){
+            
+            while(Fatigue > 0){
                 upgrader_body.push(MOVE);
                 cost_of_upgrader += 50;
                 Fatigue = Fatigue -2;
             }
         }
-        console.log(upgrader_body.sort() +'\n'
-        +'cost '+ecoAI.bodyCost(upgrader_body) +'\n'
-        +'capacity '+room_development)
+        
+        if(report){
+            console.log(upgrader_body.sort() +'\n'
+            +'cost '+ecoAI.bodyCost(upgrader_body) +'\n'
+            +'capacity '+room_development)  
+        }
+
         return upgrader_body.sort();
 
     },
     // Largest milita the room can currently build, if roads is false then it needs a move part per each other part
-    largest_milita:function(SpawnLoc){
+    largest_milita:function(SpawnLoc,report = false){
         
         var cur_room = SpawnLoc.room;
         
@@ -165,50 +207,47 @@ var bodyBuilder = {
         
         var Fatigue = 0;
 
-        var work_parts = 0;
+        var attack_parts = 0;
         
         
-        while(cost_of_milita < room_development - 150){
+        while(cost_of_milita < room_development - 200 && milita_body.length < 50){
             
-            if(Fatigue > 0){
-                milita_body.push(MOVE);
-                cost_of_milita += 50;
-                Fatigue = Fatigue -2;
+
+            // Every 2nd ranged part add a attack part instead of a work part
+            if (attack_parts == 1){
+                attack_parts = 0;
+                milita_body.push(ATTACK);
+            
+                cost_of_milita += 80;
+                Fatigue += 2;
+                
             }
             else{
-                // Every 2nd ranged part add a attack part instead of a work part
-                if (work_parts == 1){
-                    work_parts = 0;
-                    milita_body.push(ATTACK);
+                milita_body.push(RANGED_ATTACK);
                 
-                    cost_of_milita += 80;
-                    Fatigue += 2;
-                    
-                }
-                else{
-                    milita_body.push(RANGED_ATTACK);
-                    
-                    cost_of_milita += 150;
-                    Fatigue += 2;
-                    
-                    work_parts += 1;
-                }
+                cost_of_milita += 150;
+                Fatigue += 2;
+                
+                attack_parts += 1;
             }
-            if(Fatigue > 0){
+            
+            while(Fatigue > 0){
                 milita_body.push(MOVE);
                 cost_of_milita += 50;
                 Fatigue = Fatigue -2;
             }
         }
-        console.log(milita_body.sort())
-        console.log('cost '+ecoAI.bodyCost(milita_body))
-        console.log('capacity '+room_development)
+        if(report){
+            console.log(milita_body.sort())
+            console.log('cost '+ecoAI.bodyCost(milita_body))
+            console.log('capacity '+room_development)
+        }
         return milita_body.sort();
 
     },
     
     // Largest worker/ maintainer/ builder
-    MineralCollector:function(SpawnLoc,roads = false,max_work_parts = 25){
+    MineralCollector:function(SpawnLoc,roads = false,max_work_parts = 25,report = false){
         
         var cur_room = SpawnLoc.room;
         
@@ -218,45 +257,104 @@ var bodyBuilder = {
         
         var body_cost = ecoAI.bodyCost(collector_body);
         
+        var move_cost = 2;
+        
+        var Fatigue = 0;
+        
         if(roads){
             var Fatigue = -1;
-        } else{
-            var Fatigue = 0;
+            move_cost = 1;
         }
         
         var work_parts = 0;
         
-        while(body_cost < room_development - 100 && work_parts < max_work_parts){
+        while(body_cost < room_development - 100 && work_parts < max_work_parts && collector_body.length < 50){
             
-            if(Fatigue > 0){
-                collector_body.push(MOVE);
-                body_cost += 50;
-                Fatigue = Fatigue -2;
-            } else{
-                collector_body.push(WORK);
-                
-                body_cost += 100;
-                if(roads){
-                    Fatigue += 1;
-                } else{
-                    Fatigue += 2;
-                }
-                work_parts += 1;
-            }
+
+            collector_body.push(WORK);
             
-            if(Fatigue > 0){
+            body_cost += 100;
+            
+            Fatigue += move_cost;
+            
+            work_parts += 1;
+            
+            
+            while(Fatigue > 0){
                 collector_body.push(MOVE);
                 body_cost += 50;
                 Fatigue = Fatigue -2;
             }
         }
-        console.log(collector_body.sort() +'\n'
-        +'cost '+ecoAI.bodyCost(body_cost) +'\n'
-        +'capacity '+room_development)
+        
+        if(report){
+            console.log(collector_body.sort() +'\n'
+            +'cost '+ecoAI.bodyCost(body_cost) +'\n'
+            +'capacity '+room_development)
+            
+        }
+        
         return collector_body.sort();
 
     },
-    largest_worker:function(SpawnLoc){
+    largest_worker:function(SpawnLoc,roads = false,max_work_parts = 10,report = false,max_size = 34){
+        
+        var cur_room = SpawnLoc.room;
+        
+        var room_development = cur_room.energyCapacityAvailable;
+        
+        var worker_body = new Array(CARRY,MOVE);
+        
+        var body_cost = ecoAI.bodyCost(worker_body);
+        
+        var move_cost = 2;
+        
+        var Fatigue = 0;
+        
+        if(roads){
+            var Fatigue = -1;
+            move_cost = 1;
+        }
+        
+        var work_parts = 0;
+        
+        while(body_cost < room_development - 100 && work_parts < max_work_parts && worker_body.length < max_size){
+            // For every 2 work parts attach a carry part.
+            if(work_parts == 2){
+                worker_body.push(CARRY);
+                Fatigue += move_cost;
+                body_cost += 50;
+                work_parts = 0;
+                
+            }else{
+                worker_body.push(WORK);
+                body_cost += 100;
+                Fatigue += move_cost;
+                work_parts += 1;
+            }
+            
+            while(Fatigue > 0){
+                worker_body.push(MOVE);
+                body_cost += 50;
+                Fatigue = Fatigue -2;
+            }
+        }
+        
+        if(report){
+            console.log(worker_body.sort() +'\n'
+            +'cost '+ecoAI.bodyCost(body_cost) +'\n'
+            +'capacity '+room_development)
+            
+        }
+        
+        return worker_body.sort();
+
+    },
+    
+    
+    
+    
+    largest_worker_old:function(SpawnLoc){
         
         
         
@@ -271,7 +369,7 @@ var bodyBuilder = {
                         3:[WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],//Max energy for RCL 3
                         4:[WORK,WORK,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
                         5:[WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
-                        6:[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
+                        6:[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
                         7:[WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
                         8:[WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],
         };
@@ -294,7 +392,42 @@ var bodyBuilder = {
             
         }
         return total;
+    },
+    
+    
+     /**
+     * Add element(s) to a elements. If not all elements can be added it will add none.
+     *
+     * @param {string|Array} elements Element(s) to add to the elements containing part names
+     * @returns {boolean}
+     */
+    addToDesign(elements){
+        if(elements instanceof Array){
+            var budgetLeft = this.budget;
+            if((elements.length + this.elements.length) > 50) return false;
+
+            for(var itm of elements){
+                if (BODYPART_COST[itm] < budgetLeft) {
+                    budgetLeft -= BODYPART_COST[itm];
+                } else return false;
+            }
+            this.budget = budgetLeft;
+            this.elements = this.elements.concat(elements);
+        }
+        else {
+            if(this.elements.length > 49) return false;
+            if (BODYPART_COST[elements] > this.budget) return false;
+
+            this.budget -= BODYPART_COST[elements];
+            this.elements.push(elements);
+        }
+        return true;
     }
+    
+    
+    
+    
+    
 }
 
 

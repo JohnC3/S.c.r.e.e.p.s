@@ -1,6 +1,9 @@
 var roleTruck = {
     run: function(creep){
         
+        //if(Memory.safety[creep.room.name]){
+            
+            
         if(creep.memory.curRoom != creep.room.name){
             creep.moveTo(new RoomPosition(25,25, creep.pos.roomName));
             creep.say('New room');
@@ -16,6 +19,14 @@ var roleTruck = {
         if(creep.memory.energy_delivered == undefined){
             creep.memory.energy_delivered = 0;
         }
+        
+        //if(creep.memory.P === undefined){
+        //    roleTruck.find_path(creep)
+        //}
+        
+        
+        
+        
         
         if(creep.memory.energy_pickedup == undefined){
             creep.memory.energy_pickedup = 0;
@@ -38,7 +49,6 @@ var roleTruck = {
             
             roleTruck.get_energy(creep);
             // If you are not in your station go to your station!
-
             
             // If full goto dropoff mode.
             if(_.sum(creep.carry) == creep.carryCapacity){
@@ -50,9 +60,27 @@ var roleTruck = {
         }
         // If you are not picking up energy drop it off.
         else{
+            
+            // Do roadwork if applicable.
+            roleTruck.maintain_roads(creep);
+            
             // If not in the correct room for a dropoff return to said room.
             if(creep.memory.droplocation != creep.room.name){
-                creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.droplocation)));
+                /*
+                var targ = creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.droplocation))
+                try{
+                    if(!creep.memory.path) {
+                        creep.memory.path = creep.pos.findPathTo(targ);
+                    }
+                    creep.moveByPath(creep.memory.path);
+                }
+                
+
+                catch(Error){
+                    creep.moveTo(targ);
+                }
+                */
+                creep.moveTo(creep.pos.findClosestByRange(creep.room.findExitTo(creep.memory.droplocation)))
             }
             else{
                 
@@ -129,6 +157,10 @@ var roleTruck = {
             }
             
         }
+        //}else{
+        //    creep.moveTo(creep.memory.spawn)
+        //}
+        
         
     },
     get_energy:function(creep,idleFlag = true){
@@ -151,6 +183,7 @@ var roleTruck = {
                 }
                 
                 if(dropped_e.length > 0){
+                    //console.log(JSON.stringify(containersWithEnergy.concat(dropped_e)))
                     var target = creep.pos.findClosestByRange(containersWithEnergy.concat(dropped_e));
                 } else{
                     var target = creep.pos.findClosestByRange(containersWithEnergy);
@@ -181,14 +214,36 @@ var roleTruck = {
                         creep.memory.pickupPoint = undefined;
                     }
                 }
+            }else{
+                return 0
             }
         }
     },
-    remoteMinePath:function(creep){
-        //if(creep.room.name == creep.memory.station){
-            //PathFinder.search(creep.memory.spawn, goal, [opts])
-        //}
+    maintain_roads:function(creep){
+        // If you have a work part build nearby roads.
+        work_parts = _.filter(creep.body,p => p.type == 'work').length;
         
+        //console.log(JSON.stringify(creep.body))
+        if(work_parts > 0){
+            //creep.say(work_parts)
+            try{
+                var nearby_road = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES,{filter: c=> c.structureType == STRUCTURE_ROAD || c.structureType == STRUCTURE_CONTAINER});
+                
+                if(nearby_road){
+                    creep.build(nearby_road);
+                }else{
+                    var nearby_road_work = creep.pos.findClosestByPath(FIND_STRUCTURES,{filter: c => (c.structureType == STRUCTURE_ROAD && c.hits <= (3*c.hitsMax)/4) || (c.structureType == STRUCTURE_CONTAINER && c.hits <= (3*c.hitsMax)/4)})
+                    //var nearby_road_work = creep.pos.findClosestByPath(FIND_STRUCTURES,{filter: c => c.structureType == STRUCTURE_ROAD && c.hits < 4000})
+                    if(nearby_road_work){
+                        creep.repair(nearby_road_work)
+                    }
+                }
+            }catch(Error){
+                creep.say('build issue')
+                console.log(creep.name+' build issue error : '+Error.message)
+            }
+            
+        }
     }
 }
         

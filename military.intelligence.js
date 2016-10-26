@@ -10,6 +10,7 @@ var bodyBuilder = require('bodyBuilder');
 
 var intel = {
     
+
     // Defend my rooms from invaders and so on
     defense:function(){
         
@@ -29,10 +30,17 @@ var intel = {
             
             var enemy_creeps = current_room.find(FIND_HOSTILE_CREEPS);
             
+            // Only defend rooms in my domain!
+            
+            
+            
             if(enemy_creeps.length > 0 && Memory.myDomain.indexOf(r) > 0){
+                
+                console.log('room: '+current_room.name)
                 
                 //  If a room has enemy creeps it is not safe.
                 Memory.safety[current_room] = false;
+                Memory.safety[current_room.name] = false;
                 
                 total_enemy_creeps += enemy_creeps.length;
                 
@@ -68,20 +76,19 @@ var intel = {
                     console.log('assigned_defenders '+assigned_defenders)
                 }
                 
-                Game.flags.troops.setPosition( new RoomPosition(25,25, r))
-                
                 intel.safeModeTest(current_room);
 
             }
             // Set safety to true if the room has no enemies.
             if(enemy_creeps == 0){
                 Memory.safety[current_room] = true;
+                Memory.safety[current_room.name] = true;
             }
             
         }
 
         if(attacks_in_progress > 0){
-            console.log('attacks_in_progress '+attacks_in_progress)
+            console.log('attacks_in_progress '+attacks_in_progress +'\n'+'attack size: '+enemy_creeps.length)
         }
         
         
@@ -247,9 +254,13 @@ var intel = {
         
         var nearby_rampart = creep.pos.findClosestByRange(FIND_STRUCTURES,{filter:s => s.structureType == STRUCTURE_RAMPART});
         
-        if(nearby_rampart.pos.createFlag('WallPost'+SpawnName) == ERR_NAME_EXISTS){
-            Game.flags['WallPost'+SpawnName].setPosition(nearby_rampart.pos);
-        }
+        if(nearby_rampart){
+            if(nearby_rampart.pos.createFlag('WallPost'+SpawnName) == ERR_NAME_EXISTS){
+                Game.flags['WallPost'+SpawnName].setPosition(nearby_rampart.pos);
+            }
+        } 
+        
+
     },
     
     // How much damage a hit will do to functional parts (Everything but tough)
